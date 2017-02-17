@@ -18,7 +18,6 @@ workflows = {
              { 'set_state': 'starting' },
              { 'call_operation': 'tosca.interfaces.node.lifecycle.Standard.start'},
              { 'set_state': 'started'},
-             { 'set_state': 'end'},
              ]
            }
          }
@@ -59,16 +58,29 @@ workflows = {
            'activity': 'tosca.interfaces.relationships.Configure.add_source' } ] }}
   }
 
-facts = { 'A': 	{ 'type': 'tosca.nodes.Root', 'state': 'none', 'step':0, 'out': ['rab','rac'], 'in': []},
-          'B': 	{ 'type': 'tosca.nodes.Root', 'state': 'none', 'step':0, 'out': ['rbd'], 'in': ['rab']},
-          'C': 	{ 'type': 'tosca.nodes.Root', 'state': 'none', 'step':0, 'out': [], 'in': ['rac', 'rdc']},
-          'D': 	{ 'type': 'tosca.nodes.Root', 'state': 'none', 'step':0, 'out': ['rdc'], 'in': ['rbd']},
-		  'rab': { 'type': 'tosca.relationships.ConnectsTo', 'source': 'A', 'target': 'B', 'done': [], 'source_weaving': 0, 'target_weaving': 0 },
-		  'rac': { 'type': 'tosca.relationships.ConnectsTo', 'source': 'A', 'target': 'C', 'done': [], 'source_weaving': 0, 'target_weaving': 0 },
-		  'rbd': { 'type': 'tosca.relationships.ConnectsTo', 'source': 'B', 'target': 'D', 'done': [], 'source_weaving': 0, 'target_weaving': 0 },
-		  'rdc': { 'type': 'tosca.relationships.ConnectsTo', 'source': 'D', 'target': 'C', 'done': [], 'source_weaving': 0, 'target_weaving': 0 }
+facts = { 'A': 	{ 'type': 'tosca.nodes.Root' },
+          'B': 	{ 'type': 'tosca.nodes.Root' },
+          'C': 	{ 'type': 'tosca.nodes.Root' },
+          'D': 	{ 'type': 'tosca.nodes.Root' },
+		  'rab': { 'type': 'tosca.relationships.ConnectsTo', 'source': 'A', 'target': 'B' },
+		  'rac': { 'type': 'tosca.relationships.ConnectsTo', 'source': 'A', 'target': 'C' },
+		  'rbd': { 'type': 'tosca.relationships.ConnectsTo', 'source': 'B', 'target': 'D' },
+		  'rdc': { 'type': 'tosca.relationships.ConnectsTo', 'source': 'D', 'target': 'C' }
         }
 
+def prepare_facts(facts):
+	for name, fact in facts.items():
+		if fact['type'] == 'tosca.nodes.Root':
+			fact['state'] = 'none'
+			fact['step']  = 0
+			fact['out']   = []
+			fact['in']    = []
+		if fact['type'] == 'tosca.relationships.ConnectsTo':
+			fact['done']           = []
+			fact['source_weaving'] = 0
+			fact['target_weaving'] = 0
+			facts[fact['source']]['out'].append(name)
+			facts[fact['target']]['in'].append(name)
 
 def call_operation(ope, fact):
 	pass
@@ -241,6 +253,7 @@ def buildRete():
 				step = 1
 				old_state = 'none'
 				if activities:
+					activities.append({ 'set_state': 'ended' })
 					for actions in activities:
 						cond = lambda x : facts[x]['state'] == old_state
 						new_state = actions.get('set_state')
@@ -294,6 +307,7 @@ def buildRete():
 							
 def main(args=None):
 	buildRete()
+	prepare_facts(facts)
 
 	for fact in facts:
 		rete_input.insert_fact(fact)
