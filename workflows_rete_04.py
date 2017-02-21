@@ -66,34 +66,28 @@ types_def = {
            { 'after': 'started',
              'activity': 'tosca.interfaces.relationships.Configure.add_source' } ] }
        } 
-	 }
-  }
-
-"""  'tosca.relationships.HostedOn':
-     {'workflow':
-       {'install': { 
-         'source_weaving': [
-           { 'before': 'configuring',
-             'wait_target': 'started',
-             'activity': 'tosca.interfaces.relationships.Configure.pre_configure_source' } 
-             ] 
-           }
-       }
-     }"""
-
-""",
+	 },
   'tosca.relationships.HostedOn':
      {'workflow':
        {'install': { 
          'source_weaving': [
-           { 'before': 'configuring',
-             'wait_target': 'started',
-             'activity': 'tosca.interfaces.relationships.Configure.pre_configure_source' } 
+           { 'before': 'creating',
+             'wait_target': 'started' } 
              ] 
            }
        }
-     }
-"""
+     },	 
+  'tosca.relationships.DependsOn':
+     {'workflow':
+       {'install': { 
+         'source_weaving': [
+           { 'before': 'creating',
+             'wait_target': 'started' } 
+             ] 
+           }
+       }
+     }	 
+  }
 
 
 """
@@ -107,7 +101,15 @@ facts = { 'A': 	{ 'type': 'tosca.nodes.Root' },
 		  'rab': { 'type': 'tosca.relationships.ConnectsTo', 'source': 'A', 'target': 'B' },
 		  'rac': { 'type': 'tosca.relationships.ConnectsTo', 'source': 'A', 'target': 'C' },
 		  'rbd': { 'type': 'tosca.relationships.ConnectsTo', 'source': 'B', 'target': 'D' },
-		  'rdc': { 'type': 'tosca.relationships.ConnectsTo', 'source': 'D', 'target': 'C' }
+		  'rdc': { 'type': 'tosca.relationships.ConnectsTo', 'source': 'D', 'target': 'C' },
+		  'srvA': { 'type': 'tosca.nodes.Root' },
+		  'ha':   { 'type': 'tosca.relationships.HostedOn', 'source': 'A', 'target': 'srvA' },
+		  'srvB': { 'type': 'tosca.nodes.Root' },
+		  'hb':   { 'type': 'tosca.relationships.HostedOn', 'source': 'B', 'target': 'srvB' },
+		  'srvC': { 'type': 'tosca.nodes.Root' },
+		  'hc':   { 'type': 'tosca.relationships.HostedOn', 'source': 'C', 'target': 'srvC' },
+		  'srvD': { 'type': 'tosca.nodes.Root' },
+		  'hd':   { 'type': 'tosca.relationships.HostedOn', 'source': 'D', 'target': 'srvD' }
         }
 
 
@@ -195,7 +197,9 @@ class ReteStateCond(Rete):
 		if self.cond(fact):
 			self.facts = self.facts | set([fact])
 			# insert into parent only if all facts related to ingoing or outgoing relations have reached the expected state for weaving.
-			if all([ not len(set(facts[fact][relaction.direction]) - relaction.facts) for relaction in self.reterelactions ]):
+			if all([ not len(set([ f for f in facts[fact][relaction.direction] \
+					if facts[f]['type'] == relaction.typename ]) - relaction.facts) \
+					for relaction in self.reterelactions ]):
 				for parent in self.parents:
 					parent.insert_fact(fact) 
 
@@ -285,10 +289,11 @@ class ReteRelAction(Rete):
 		The fact on weach on which the operation will be executed (source or target) depends on the weaving direction.
 	"""
 
-	def __init__(self, workflow_name, activity, direction, step, childs, ):
+	def __init__(self, workflow_name, activity, typename, direction, step, childs, ):
 		super(ReteRelAction, self).__init__(workflow_name)
 		self.direction = direction
 		self.activity = activity
+		self.typename = typename
 		self.step = step
 		self.weavingdir= {'in':'target','out':'source'}[self.direction]
 		for child in childs:
@@ -412,7 +417,7 @@ def buildRete():
 							# A condition on source and target is created on relations.
 							rete_relcond = ReteRelCond(workflow_name, direction, find_step, wait_step, step, [ rete_type ])
 							# Action on source or target is launched if condition is met.
-							rete_relaction = ReteRelAction(workflow_name, action, direction, step, [ rete_relcond ])
+							rete_relaction = ReteRelAction(workflow_name, action, typename, direction, step, [ rete_relcond ])
 							# Here is the key of the weaving process : condition on the status of all facts related to relations 
 							# is insertedat the weaving point.
 							find_cond.add_reterelaction(rete_relaction)
