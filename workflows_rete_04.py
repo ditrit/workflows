@@ -24,6 +24,7 @@ types_def = {
                { 'set_state': 'starting' },
                { 'call_operation': 'tosca.interfaces.node.lifecycle.Standard.start'},
                { 'set_state': 'started'},
+               { 'set_state': 'ended'},
                ]
              }
            }
@@ -63,14 +64,42 @@ types_def = {
            { 'before': 'configured',
              'activity': 'tosca.interfaces.relationships.Configure.post_configure_target'},
            { 'after': 'started',
-             'activity': 'tosca.interfaces.relationships.Configure.add_source' } ] }}
-     }
+             'activity': 'tosca.interfaces.relationships.Configure.add_source' } ] }
+       } 
+	 }
   }
+
+"""  'tosca.relationships.HostedOn':
+     {'workflow':
+       {'install': { 
+         'source_weaving': [
+           { 'before': 'configuring',
+             'wait_target': 'started',
+             'activity': 'tosca.interfaces.relationships.Configure.pre_configure_source' } 
+             ] 
+           }
+       }
+     }"""
+
+""",
+  'tosca.relationships.HostedOn':
+     {'workflow':
+       {'install': { 
+         'source_weaving': [
+           { 'before': 'configuring',
+             'wait_target': 'started',
+             'activity': 'tosca.interfaces.relationships.Configure.pre_configure_source' } 
+             ] 
+           }
+       }
+     }
+"""
 
 
 """
 	Example facts used to test the workflow	
 """
+
 facts = { 'A': 	{ 'type': 'tosca.nodes.Root' },
           'B': 	{ 'type': 'tosca.nodes.Root' },
           'C': 	{ 'type': 'tosca.nodes.Root' },
@@ -203,6 +232,8 @@ class ReteRelCond(Rete):
 	def insert_fact(self, fact):
 			
 		if self.cond(fact):
+			#print "ReteRelCond OK =====> Fact = " + fact + " : " + str(facts[fact])
+			#print "ReteRelCond OK =====> Source = " + facts[fact]['source'] + " : " + str(facts[facts[fact]['source']])
 			self.facts = self.facts | set([fact])
 			for parent in self.parents:
 				parent.insert_fact(fact) 
@@ -233,6 +264,7 @@ class ReteAction(Rete):
 			facts[fact]['state'] = self.set_state
 			print fact + ".state = " + self.set_state
 		# A new step in the workflow is reached for the fact
+		#print "Fact = " + fact + " : " + str(facts[fact])
 		facts[fact]['step'] = self.step
 		self.facts = self.facts | set([fact])
 		# Action impacts current fact and potentially each fact related to ingoing or outgoing relations.
@@ -365,9 +397,11 @@ def buildRete():
 								if rete_cond.state == weaving_state:
 									break
 								if before_state:
-									find_cond = rete_states[workflow_name][rete_states[workflow_name].index(rete_cond) - 1]
-								if after_state:
+									#find_cond = rete_states[workflow_name][rete_states[workflow_name].index(rete_cond) - 1]
 									find_cond = rete_cond
+								if after_state:
+									#find_cond = rete_cond
+									find_cond = rete_states[workflow_name][rete_states[workflow_name].index(rete_cond) + 1]
 								find_step = find_cond.step
 		
 							# 'wait_state' and related 'wait_step' concern the condition to be observed on the other node of the relation.
@@ -413,12 +447,13 @@ def main(args=None):
 	for fact in facts:
 		workflows_input['install'].insert_fact(fact)
 
+"""
 	print "==============================="
 
 	prepare_facts(facts)
 	for fact in facts:
 		workflows_input['uninstall'].insert_fact(fact)
-	
+"""	
 			
 if __name__ == '__main__':
     main()
