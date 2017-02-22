@@ -2,6 +2,7 @@
 
 import os
 import sys
+import copy
 
 """
 	'types_def' is the literal yaml transcription of the both TOSCA normative types 
@@ -93,7 +94,6 @@ types_def = {
 """
 	Example facts used to test the workflow	
 """
-
 facts = { 'A': 	{ 'type': 'tosca.nodes.Root' },
           'B': 	{ 'type': 'tosca.nodes.Root' },
           'C': 	{ 'type': 'tosca.nodes.Root' },
@@ -133,7 +133,7 @@ class Rete(object):
 		self.facts=set()
 		self.cond= lambda x: True
 
-	def insert_fact(self, fact):
+	def insert_fact(self, fact):		
 		if self.cond(fact):
 			self.facts = self.facts | set([fact])
 			for parent in self.parents:
@@ -197,12 +197,11 @@ class ReteStateCond(Rete):
 		if self.cond(fact):
 			self.facts = self.facts | set([fact])
 			# insert into parent only if all facts related to ingoing or outgoing relations have reached the expected state for weaving.
-			if all([ not len(set([ f for f in facts[fact][relaction.direction] \
-					if facts[f]['type'] == relaction.typename ]) - relaction.facts) \
+			if all([ not len(set([ f for f in facts[fact][relaction.direction][relaction.typename] ]) \
+								 - relaction.facts) \
 					for relaction in self.reterelactions ]):
 				for parent in self.parents:
 					parent.insert_fact(fact) 
-
 
 class ReteRelCond(Rete):
 	"""
@@ -273,10 +272,12 @@ class ReteAction(Rete):
 		self.facts = self.facts | set([fact])
 		# Action impacts current fact and potentially each fact related to ingoing or outgoing relations.
 		workflows_input[self.workflow_name].insert_fact(fact)
-		for r in facts[fact]['in']:
-			workflows_input[self.workflow_name].insert_fact(r)
-		for r in facts[fact]['out']:
-			workflows_input[self.workflow_name].insert_fact(r)
+		for trel in facts[fact]['in'].values():
+			for r in trel:
+				workflows_input[self.workflow_name].insert_fact(r)
+		for trel in facts[fact]['out'].values():
+			for r in trel:
+				workflows_input[self.workflow_name].insert_fact(r)
 
 	def __str__(self):
 		return "ReteAction( actions = " + str(self.actions)  + ", " + "step: = " + str(self.step) + ")"
@@ -429,18 +430,21 @@ def prepare_facts(facts):
         	Initializes necessary status information for each fact. 
                 Also provides for each node instance the set of outgoing and ingoing relations. 
 	"""
+	reltypes = { typename: [] for typename in types_def if ".relationships." in typename }
 	for name, fact in facts.items():
-		if ".nodes." in fact['type']:
+		tfact = fact['type']
+		if ".nodes." in tfact:
 			fact['state'] = 'none'
 			fact['step']  = 0
-			fact['out']   = []
-			fact['in']    = []
-		if ".relationships." in fact['type']:
+			fact['out']   = copy.deepcopy(reltypes)
+			fact['in']    = copy.deepcopy(reltypes)
+		if ".relationships." in tfact:
 			fact['done']           = []
 			fact['source_weaving'] = 0
 			fact['target_weaving'] = 0
-			facts[fact['source']]['out'].append(name)
-			facts[fact['target']]['in'].append(name)
+			facts[fact['source']]['out'][tfact].append(name)
+			facts[fact['target']]['in'][tfact].append(name)
+
 
 def main(args=None):
 	"""
@@ -448,9 +452,13 @@ def main(args=None):
 	"""
 	buildRete()
 	prepare_facts(facts)
+	for name, fact in facts.items():
+		print name + ": " + str(fact)
 
+	print "==================="
 	for fact in facts:
 		workflows_input['install'].insert_fact(fact)
+	print "==================="
 
 """
 	print "==============================="
