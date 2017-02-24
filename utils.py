@@ -13,7 +13,7 @@ def consul_lock(consul, session_id, lock_key = None):
 		if lock:
 			yield			
 	except:
-		print "Erreur dans la gestion des locks Consul"
+		print "Error inside protected section (using Consul lock mechanism)"
 		
 	finally:
 		unlock = consul.kv.release_lock(lock_key, session_id)
