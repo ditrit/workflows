@@ -11,7 +11,10 @@ def consul_lock(consul, session_id, lock_key = None):
 	try: 
 		lock = consul.kv.acquire_lock(lock_key, session_id)
 		if lock:
-			yield			
+			try:
+				yield			
+			except:
+				print "Erreur dans la partie lockee"
 	except:
 		print "Erreur dans la gestion des locks Consul"
 		

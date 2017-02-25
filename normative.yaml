@@ -43,7 +43,7 @@ relationship_types:
             wait_target: started 
           - after: started
             activity: tosca.interfaces.relationships.Configure.add_target
-            target_weaving: 
+        target_weaving: 
           - after: configuring 
             after_source: created 
             activity: tosca.interfaces.relationships.Configure.pre_configure_target
