@@ -16,7 +16,7 @@ def consul_lock(consul, session_id, lock_key = None):
 			except:
 				print "Erreur dans la partie lockee"
 	except:
-		print "Erreur dans la gestion des locks Consul"
+		print "Error inside protected section (using Consul lock mechanism)"
 		
 	finally:
 		unlock = consul.kv.release_lock(lock_key, session_id)
