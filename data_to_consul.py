@@ -27,7 +27,7 @@ def prepare_facts(consul, node_facts, rel_facts, toscayaml):
 
 	consul.kv["node_facts"] = node_facts.keys()
 	for name, fact in node_facts.items():
-		consul.kv[name] = fact
+		consul.kv["Fact/{}".format(name)] = fact
 
 def prepare_workflows(consul, toscayaml):
 	"""
