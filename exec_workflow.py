@@ -12,13 +12,15 @@ def call_operation(fact_name, operation_name):
 	
 
 def insert_fact(workflow_name, fact_name):
-
 	
 	consul = consulate.Consul()
 	session_id = consul.session.create()
 
-	#with consul_lock(consul, session_id, 'locks/{}/{}'.format(workflow_name, fact_name)):
-	if True:
+	rete_changed = fact_changed = False
+	
+	ret = 'nothing'
+	
+	with consul_lock(consul, session_id, 'locks/{}/{}'.format(workflow_name, fact_name)):
 		facts = consul.kv.find("Fact/")
 		keyfact = "Fact/{}".format(fact_name)
 		fact_def = json.loads(facts[keyfact])
@@ -31,7 +33,6 @@ def insert_fact(workflow_name, fact_name):
 			keyrete = "ReteNode/{}/{}/{}".format(workflow_name, fact_def['type'], newstep)
 			rete = json.loads(consul.kv[keyrete])
 		
-			rete_changed = fact_changed = False
 			if fact_name not in rete['facts']:
 				rete['facts'].append(fact_name)
 				rete_changed = True
@@ -63,21 +64,35 @@ def insert_fact(workflow_name, fact_name):
 		
 			if fact_changed == True:
 				consul.kv[keyfact] = fact_def
+				ret = 'changed'
 			if rete_changed == True:
 				consul.kv[keyrete] = rete
-						
+				ret = 'changed'
+		else:
+			ret = 'ended'
+			
 	session_ended = consul.session.destroy(session_id)
 	if session_ended == False:
 		print "Session non terminee"
+	
+	return ret 
 
 def main(args=None):
 
 	print "TOSCA parsing"
 	workflow_name = sys.argv[1] if len(sys.argv) > 1 else None
-	fact_name     = sys.argv[2] if len(sys.argv) > 2 else None
+
+	consul = consulate.Consul()
+	facts = json.loads(consul.kv['node_facts'])
+	print "facts = {}".format(facts)
 	
-	insert_fact(workflow_name, fact_name)
-			
+	while len(facts)>0:
+		results =  { fact_name: insert_fact(workflow_name, fact_name) for fact_name in facts  }
+		if any([ fact_name for fact_name in results if results[fact_name] == 'changed']):
+			facts = [ fact_name for fact_name in results if results[fact_name] != 'ended']
+		else:
+			facts = []
+
 if __name__ == '__main__':
     main()
              
