@@ -15,10 +15,20 @@ Both facts and RETE rules are stored into Consul.
 
 ## Running the example
 
-1. Prerequisite : local Consul agent with workflow_watch.conf installed.
-2. Parse and upload exemple : <pre>python data_to_consul.py normative.yaml</pre>
-3. Execute install workflow using Consul kv : <pre>consul kv put exec-workflow "{'name': 'install'}"</pre>
-4. Watch execution with <pre>tail -f /opt/execs</pre>
+1. Prerequisite :
+   - A working consul cluster (tested with 3 consul servers)
+   - A set of workflow workers (tested with 3 servers). 
+   - A manager server (can be one of the workflow server)
+   - can just copy exec_workflow.py and utils.py on the other ones. 
+2. Installation :
+   - Install a consul agent and join it to the cluster for each worker and the manager.
+   - Copy 'workers/workflow_watch.json' into the consul config directory for each workflow worker
+   - Copy 'workers/.py' into '/usr/local/bin' for each workflow server
+   - copy 'manager/*' on the manager.
+2. Parse and upload the exemple on the manager: <pre>python data_to_consul.py normative.yaml</pre>
+3. Launch the workflow from the manager : <pre>consul kv put exec-workflow "{'name': 'install'}"</pre>
+4. Watch execution from each workflow worker <pre>tail -f /opt/execs</pre>
+5. Shutdown one of the worker during execution and verify it's still working.
 
 
 # Caution

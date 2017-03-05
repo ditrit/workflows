@@ -74,13 +74,12 @@ def insert_fact(workflow_name, fact_name):
 			
 	session_ended = consul.session.destroy(session_id)
 	if session_ended == False:
-		print "Session non terminee"
+		print "Session not ended"
 	
 	return ret 
 
 def main(args=None):
 	
-	print "exec_owrkflow"
 	consul = consulate.Consul()
 	facts = []
 	watch_input = sys.stdin.readlines()
@@ -91,11 +90,6 @@ def main(args=None):
 	facts = value.get('facts')
 	if facts == None:
 		facts = json.loads(consul.kv['node_facts'])
-
-	print "value = {}".format(value)
-	print "workflow_name = {}".format(workflow_name)
-	print "facts = {}".format(facts)
-
 
 	if len(facts)>0:
 		results =  { fact_name: insert_fact(workflow_name, fact_name) for fact_name in facts  }

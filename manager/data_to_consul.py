@@ -5,7 +5,6 @@ import sys
 import copy
 import consulate
 import json
-from utils import consul_lock
 from tosca_template import ToscaTemplate
 
 
