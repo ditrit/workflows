@@ -4,6 +4,7 @@ import os
 import sys
 import consulate
 import json
+import base64
 from utils import consul_lock
 
 def call_operation(fact_name, operation_name):
@@ -78,20 +79,31 @@ def insert_fact(workflow_name, fact_name):
 	return ret 
 
 def main(args=None):
-
-	print "TOSCA parsing"
-	workflow_name = sys.argv[1] if len(sys.argv) > 1 else None
-
-	consul = consulate.Consul()
-	facts = json.loads(consul.kv['node_facts'])
-	print "facts = {}".format(facts)
 	
-	while len(facts)>0:
+	print "exec_owrkflow"
+	consul = consulate.Consul()
+	facts = []
+	watch_input = sys.stdin.readlines()
+	dict_input = eval(watch_input[0])
+	key = dict_input['Key']
+	value = eval(base64.b64decode(dict_input['Value']))
+	workflow_name = value['name']
+	facts = value.get('facts')
+	if facts == None:
+		facts = json.loads(consul.kv['node_facts'])
+
+	print "value = {}".format(value)
+	print "workflow_name = {}".format(workflow_name)
+	print "facts = {}".format(facts)
+
+
+	if len(facts)>0:
 		results =  { fact_name: insert_fact(workflow_name, fact_name) for fact_name in facts  }
 		if any([ fact_name for fact_name in results if results[fact_name] == 'changed']):
 			facts = [ fact_name for fact_name in results if results[fact_name] != 'ended']
 		else:
 			facts = []
+		consul.kv['exec-workflow'] = {'name': 'install', 'facts': facts}
 
 if __name__ == '__main__':
     main()
