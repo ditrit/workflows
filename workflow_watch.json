@@ -1,0 +1,9 @@
+{
+  "watches": [
+  {
+    "type": "key",
+    "key": "exec-workflow",
+    "handler": "python /usr/local/bin/exec_workflow.py >> /opt/execs"
+  }
+  ]
+}

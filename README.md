@@ -8,7 +8,6 @@ The purpose is to implement TOSCA declarative workflows defined at node type and
 Workflow definition is parsed into a simple rule based RETE like engine. 
 Orchestration is launched simply inserting facts (nodes and relationships instances) into the RETE network.
 Both facts and RETE rules are stored into Consul. 
-Workflow execution is just inserting facts into RETE rules.
 
 ## The exemple 
 - Workflows implemented are standard `install and uninstall TOSCA workflow as defined in § "7.4.2 Weaving improvements" of the normative document.
@@ -16,9 +15,10 @@ Workflow execution is just inserting facts into RETE rules.
 
 ## Running the example
 
-1. Prerequisite : local Consul agent.
+1. Prerequisite : local Consul agent with workflow_watch.conf installed.
 2. Parse and upload exemple : <pre>python data_to_consul.py normative.yaml</pre>
-3. Execute workflow : <pre>python exec_workflow.py install</pre>
+3. Execute install workflow using Consul kv : <pre>consul kv put exec-workflow "{'name': 'install'}"</pre>
+4. Watch execution with <pre>tail -f /opt/execs</pre>
 
 
 # Caution
