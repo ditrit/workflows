@@ -3,13 +3,12 @@
 import os
 import sys
 import copy
-import consulate
-import json
 from tosca_template import ToscaTemplate
+from linda import *
 
 
 
-def prepare_facts(consul, node_facts, rel_facts, toscayaml):
+def prepare_facts(node_facts, rel_facts, toscayaml):
 	""" 
         	Initializes necessary status information for each fact. 
                 Also provides for each node instance the set of outgoing and ingoing relations. 
@@ -24,11 +23,11 @@ def prepare_facts(consul, node_facts, rel_facts, toscayaml):
 			node_facts[fact['source']]['out'][fact['type']].append(fact['target'])
 			node_facts[fact['target']]['in'][fact['type']].append(fact['source'])
 
-	consul.kv["node_facts"] = node_facts.keys()
+	linda_out("node_facts", node_facts.keys())
 	for name, fact in node_facts.items():
-		consul.kv["Fact/{}".format(name)] = fact
+		linda_out("Fact/{}".format(name), fact)
 
-def prepare_workflows(consul, toscayaml):
+def prepare_workflows(toscayaml):
 	"""
 		This function builds the RETE network parsing the provided workflows definition.
                 Workflows defintion is extracted from the set of 'node_types' and 'relationship_types' definition 
@@ -123,7 +122,7 @@ def prepare_workflows(consul, toscayaml):
 
 	# insertion du reseau rete dans Consul
 	for key in rete:
-		consul.kv[key] = rete[key]
+		linda_out(key, rete[key])
 		
 
 
@@ -154,14 +153,11 @@ def upload(toscayaml):
 		'hd':   { 'type': 'tosca.relationships.HostedOn', 'source': 'D', 'target': 'srvD' }}
 
 
-	# Consul connexion
-	consul = consulate.Consul()
-
 	# Insert facts into kvstore
-	prepare_facts(consul, node_facts, rel_facts, toscayaml)
+	prepare_facts(node_facts, rel_facts, toscayaml)
 
 	# Parse and insert workflows into Consul
-	prepare_workflows(consul, toscayaml)
+	prepare_workflows(toscayaml)
 
 
 def main(args=None):
@@ -173,6 +169,7 @@ def main(args=None):
 
 	print "TOSCA parsing"
 	filename = sys.argv[1] if len(sys.argv) > 1 else None
+	toscayaml = {}
 	
 	if filename is not None:
 		tosca = ToscaTemplate(filename)
