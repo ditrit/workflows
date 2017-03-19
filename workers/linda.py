@@ -34,10 +34,6 @@ def linda_out(key, value):
    return ret.json()
 
 def linda_rd(key):
-  url = "{}{}{}".format(urlprefix, key, suffix)
-  ret = requests.get(url)
-
-def linda_rd(key):
   ret = requests.get("{}{}".format(urlprefix, key))
   val = None
   if ret.status_code == 200:
