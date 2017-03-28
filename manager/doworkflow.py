@@ -14,7 +14,7 @@ def main(args=None):
 	
     workflow_name = sys.argv[1] if len(sys.argv) > 1 else None
     if workflow_name is not None:
-	f = linda_rd('node_facts')
+	f = linda_rd('facts')
 	facts = eval(f)
 
         # every fact of the instance is written to trigger workflow worker

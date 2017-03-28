@@ -28,7 +28,7 @@ def getfacts():
   """ 
       get_facts simply returns the set of facts for the workflow 
   """ 
-  return eval(linda_rd('node_facts'))
+  return eval(linda_rd('facts'))
     
 def myname():
   """
@@ -71,35 +71,38 @@ def update_watches(workflow_name):
   # Do nothing if nothing changed
   if oldnodes != currentnodes:
     # If something changed, wait 3 second and reverify (do not react if something like a reloading of the configuraiton occurs).
-     time.sleep(3)
-     nodes = sorted(workernodes())
-     if oldnodes != nodes:
-   
-        linda_out(workerurl, nodes)
+    time.sleep(3)
+    nodes = sorted(workernodes())
+    if oldnodes != nodes:
+      linda_out(workerurl, nodes)
 
-        facts = sorted(getfacts())
-        myindex = nodes.index(me)
-        nbnodes = len(nodes)
-        nbfacts = len(facts)
-        nbbynode = nbfacts / nbnodes
-        delta = nbfacts % nbnodes
-        if myindex < delta:
-          nbbynode = nbbynode + 1 
+      facts = sorted(getfacts())
+      myindex = nodes.index(me)
+      nbfacts = len(facts)
+      nbnodes = len(nodes)
+      bynodes = nbfacts / nbnodes
+      complem = nbfacts % nbnodes
 
-        # Compute the list of facts to be assigned to the current worker
-        myfacts =    [ facts[(myindex + d + nbnodes * n) % nbfacts] for n in range(0, nbbynode) for d in range(0,2)]
+      # Compute the list of facts to be assigned to the current worker
+      myidx = [ (myindex * bynodes + i) % (nbnodes * bynodes) for i in range(0, bynodes * 2) ] + \
+                [ (nbnodes * bynodes + i)  for i in range(0, complem) if myindex < 2 ]
+      myfacts = [ facts[ (myindex * bynodes + i) % (nbnodes * bynodes) ] for i in range(0, bynodes * 2) ] + \
+                 [ facts[ (nbnodes * bynodes + i) ] for i in range(0, complem) if myindex < 2 ]
 
-        # Define watches definition for the facts to be assigned 
-        watches =    [ '  {"type": "key","key": "exec-wd/' + workflow_name + '/fact/' + factname + '","handler": "python /usr/local/bin/wd.py ' + factname + ' >> /opt/execs"}' for factname in myfacts]
-        watches_def = '{"watches": [\n' + ',\n'.join(watches) + '\n]}'
+      #myfacts =    [ facts[(myindex + d + nbnodes * n) % nbfacts] for n in range(0, nbbynode) for d in range(0,2)]
 
-        # Write watches configuration for the local Consul agent
-        with open("/etc/consul.d/watches.json", "w") as fwatches:
-          fwatches.write(watches_def)
+      # Define watches definition for the facts to be assigned 
+      watches =    [ '  {"type": "key","key": "exec-wd/' + workflow_name + '/fact/' + factname + '","handler": "python /usr/local/bin/wd.py ' + workflow_name + ' ' + factname + ' >> /opt/execs"}' for factname in myfacts]
+      watches_def = '{"watches": [\n' + ',\n'.join(watches) + '\n]}'
 
-        # reload Consul configuration
-        reload_me()
-      
+
+      # Write watches configuration for the local Consul agent
+      with open("/etc/consul.d/watches.json", "w") as fwatches:
+        fwatches.write(watches_def)
+
+      # reload Consul configuration
+      reload_me()
+ 
 def update_workers(workflow_name):
   update_watches(workflow_name) 
 
