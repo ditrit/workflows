@@ -6,37 +6,49 @@ import copy
 from tosca_template import ToscaTemplate
 from linda import *
 
-def prepare_facts(node_list, rel_list, instance_name):
+def prepare_facts(topology_templates):
   """ 
         create facts for instance inserting necessary status information for each. 
         Also provides for each node instance the set of outgoing and ingoing relations. 
   """
   facts = {}
   node_nb = {}
+
   reltypes = { typename: [] for typename in eval(linda_rd('relationship_type_names')) }	
-  for node in node_list:
-    node_nb[node['name']] = node['nb']
-    for n in range(0,node['nb']):
-      fact_key = "{}/{}/{}".format(instance_name, node['name'], n)
-      fact_def = {}
-      fact_def['type'] = node['type']
-      fact_def['name'] = node['name']
-      fact_def['state'] = 'none'
-      fact_def['step']  = 0
-      fact_def['out']   = copy.deepcopy(reltypes)
-      fact_def['in']    = copy.deepcopy(reltypes)
-      facts[fact_key]= fact_def
-  for node in rel_list:
-    source_name = node['source']
-    nb_source   = node_nb[source_name]
-    target_name = node['target']
-    nb_target   = node_nb[target_name]
-    for index_source in range(0, nb_source):
-      source_key = "{}/{}/{}".format(instance_name, source_name, index_source)
-      for index_target in range(0, nb_target):
-        target_key = "{}/{}/{}".format(instance_name, target_name, index_target) 
-        facts[source_key]['out'][node['type']].append(target_key)
-        facts[target_key]['in'][node['type']].append(source_key)
+  for model_name, model_def in topology_templates.items():
+    if type(model_def) is dict: 
+      topology_template = model_def.get('topology_template')
+      if type(topology_template) is dict:
+        node_templates = topology_template.get('node_templates')
+        if type(node_templates) is dict:
+          for node_name, node_template in node_templates.items():
+            fact_key = "{}/{}/{}".format(model_name, node_name, 1)
+            fact_def = facts.get(fact_key)
+            if fact_def is None:
+              fact_def = {}
+            fact_def['type'] = node_template.get('type')
+            fact_def['name'] = node_name
+            fact_def['state'] = 'none'
+            fact_def['step']  = 0
+            fact_def['out']   = copy.deepcopy(reltypes)
+            if fact_def.get('in') is None:
+              fact_def['in']  = copy.deepcopy(reltypes)
+            requirements = node_template.get('requirements')  
+            print "requirements de {} : {}".format(fact_key, requirements)
+            if type(requirements) is list:
+              for requirement in requirements:
+                if type(requirement) is dict:
+                  for req_name, req_def in requirement.items():
+                    target_name = req_def.get('node')
+                    rel_type =  req_def.get('relationship')
+                    if isinstance(target_name, basestring) and isinstance(rel_type, basestring):
+                      target_key =  "{}/{}/{}".format(model_name, target_name, 1)
+                      fact_def['out'][rel_type].append(target_key)
+                      target_def = facts.get(target_key)
+                      if target_def is None:
+                        facts[target_key] = copy.deepcopy({'in': reltypes})
+                      facts[target_key]['in'][rel_type].append(fact_key)
+            facts[fact_key] = fact_def
 
   linda_out("facts", facts.keys())
   for fact_key, fact_def in facts.items():
@@ -140,32 +152,40 @@ def prepare_workflows(toscayaml):
   for key in rete:
     linda_out(key, rete[key])
 
-def upload(toscayaml, instance_name):
-
-  # defined here because we can not currently parse
-  node_list = [ 
-    { 'name': 'A', 'type': 'tosca.nodes.Root', 'nb': 1},
-    { 'name': 'B', 'type': 'tosca.nodes.Root', 'nb': 1},
-    { 'name': 'C', 'type': 'tosca.nodes.Root', 'nb': 1},
-    { 'name': 'D', 'type': 'tosca.nodes.Root', 'nb': 1},
-    { 'name': 'srvA', 'type': 'tosca.nodes.Root', 'nb': 1},
-    { 'name': 'srvB', 'type': 'tosca.nodes.Root', 'nb': 2},
-    { 'name': 'srvC', 'type': 'tosca.nodes.Root', 'nb': 1},
-    { 'name': 'srvD', 'type': 'tosca.nodes.Root', 'nb': 5} ]
+def upload(model_name):
 
   # defined here because we can not currently parse it
-  rel_list = [
-    { 'type': 'tosca.relationships.ConnectsTo', 'source': 'A', 'target': 'B' },
-    { 'type': 'tosca.relationships.ConnectsTo', 'source': 'A', 'target': 'C' },
-    { 'type': 'tosca.relationships.ConnectsTo', 'source': 'B', 'target': 'D' },
-    { 'type': 'tosca.relationships.ConnectsTo', 'source': 'D', 'target': 'C' },
-    { 'type': 'tosca.relationships.HostedOn', 'source': 'A', 'target': 'srvA' },
-    { 'type': 'tosca.relationships.HostedOn', 'source': 'B', 'target': 'srvB' },
-    { 'type': 'tosca.relationships.HostedOn', 'source': 'C', 'target': 'srvC' },
-    { 'type': 'tosca.relationships.HostedOn', 'source': 'D', 'target': 'srvD' }]
+  topology_templates = { model_name: { 
+  'topology_template': {
+    'node_templates': { 
+      'A': {'type': 'tosca.nodes.Root',
+            'requirements': [
+              { 'A2B': { 'relationship': 'tosca.relationships.ConnectsTo', 'node': 'B' }},
+              { 'A2C': { 'relationship': 'tosca.relationships.ConnectsTo', 'node': 'C' }},
+              { 'host': { 'relationship': 'tosca.relationships.HostedOn', 'node': 'srvA' }}]
+           },
+      'B': {'type': 'tosca.nodes.Root',
+            'requirements': [
+              { 'B2D': { 'relationship': 'tosca.relationships.ConnectsTo', 'node': 'D' }},
+              { 'host': { 'relationship': 'tosca.relationships.HostedOn', 'node': 'srvB' }}]
+           },
+      'C': {'type': 'tosca.nodes.Root',
+            'requirements': [
+              { 'host': { 'relationship': 'tosca.relationships.HostedOn', 'node': 'srvC' }}]
+           },
+      'D': {'type': 'tosca.nodes.Root',
+            'requirements': [
+              { 'host': { 'relationship': 'tosca.relationships.HostedOn', 'node': 'srvD' }},
+              { 'D2C': { 'relationship': 'tosca.relationships.ConnectsTo', 'node': 'C' }}]
+           },
+      'srvA': {'type': 'tosca.nodes.Root'},
+      'srvB': {'type': 'tosca.nodes.Root'},
+      'srvC': {'type': 'tosca.nodes.Root'},
+      'srvD': {'type': 'tosca.nodes.Root'}}}}} 
+
 
   # Insert facts into kvstore
-  prepare_facts(node_list, rel_list, instance_name)
+  prepare_facts(topology_templates)
 
 
 
@@ -193,7 +213,7 @@ def main(args=None):
   if command == 'model':
     model_name = arg2
     print "Push data into Consul"
-    upload(toscayaml, model_name)
+    upload(model_name)
 			
 if __name__ == '__main__':
   main()
