@@ -6,14 +6,14 @@ import copy
 from tosca_template import ToscaTemplate
 from linda import *
 
-def prepare_facts(node_list, rel_list, instance_name, toscayaml):
+def prepare_facts(node_list, rel_list, instance_name):
   """ 
         create facts for instance inserting necessary status information for each. 
         Also provides for each node instance the set of outgoing and ingoing relations. 
   """
   facts = {}
   node_nb = {}
-  reltypes = { typename: [] for typename in toscayaml.get('relationship_types') }	
+  reltypes = { typename: [] for typename in eval(linda_rd('relationship_type_names')) }	
   for node in node_list:
     node_nb[node['name']] = node['nb']
     for n in range(0,node['nb']):
@@ -52,6 +52,8 @@ def prepare_workflows(toscayaml):
   # Part of the workflows defined in nodes have to be parsed before the part defined in relations. 
   nt_def = toscayaml.get('node_types')
   rt_def = toscayaml.get('relationship_types')
+  linda_out('node_type_names',         nt_def.keys())
+  linda_out('relationship_type_names', rt_def.keys())
 
   rete = {}
   # Parsing of the part of workflows defined at nodes level.
@@ -153,20 +155,18 @@ def upload(toscayaml, instance_name):
 
   # defined here because we can not currently parse it
   rel_list = [
-    { 'instance': 'toto', 'type': 'tosca.relationships.ConnectsTo', 'source': 'A', 'target': 'B' },
-    { 'instance': 'toto', 'type': 'tosca.relationships.ConnectsTo', 'source': 'A', 'target': 'C' },
-    { 'instance': 'toto', 'type': 'tosca.relationships.ConnectsTo', 'source': 'B', 'target': 'D' },
-    { 'instance': 'toto', 'type': 'tosca.relationships.ConnectsTo', 'source': 'D', 'target': 'C' },
-    { 'instance': 'toto', 'type': 'tosca.relationships.HostedOn', 'source': 'A', 'target': 'srvA' },
-    { 'instance': 'toto', 'type': 'tosca.relationships.HostedOn', 'source': 'B', 'target': 'srvB' },
-    { 'instance': 'toto', 'type': 'tosca.relationships.HostedOn', 'source': 'C', 'target': 'srvC' },
-    { 'instance': 'toto', 'type': 'tosca.relationships.HostedOn', 'source': 'D', 'target': 'srvD' }]
+    { 'type': 'tosca.relationships.ConnectsTo', 'source': 'A', 'target': 'B' },
+    { 'type': 'tosca.relationships.ConnectsTo', 'source': 'A', 'target': 'C' },
+    { 'type': 'tosca.relationships.ConnectsTo', 'source': 'B', 'target': 'D' },
+    { 'type': 'tosca.relationships.ConnectsTo', 'source': 'D', 'target': 'C' },
+    { 'type': 'tosca.relationships.HostedOn', 'source': 'A', 'target': 'srvA' },
+    { 'type': 'tosca.relationships.HostedOn', 'source': 'B', 'target': 'srvB' },
+    { 'type': 'tosca.relationships.HostedOn', 'source': 'C', 'target': 'srvC' },
+    { 'type': 'tosca.relationships.HostedOn', 'source': 'D', 'target': 'srvD' }]
 
   # Insert facts into kvstore
-  prepare_facts(node_list, rel_list, instance_name, toscayaml)
+  prepare_facts(node_list, rel_list, instance_name)
 
-  # Parse and insert workflows into Consul
-  prepare_workflows(toscayaml)
 
 
 def main(args=None):
@@ -177,18 +177,23 @@ def main(args=None):
   """
 
   print "TOSCA parsing"
-  filename = sys.argv[1] if len(sys.argv) > 1 else None
-  instance_name = sys.argv[2] if len(sys.argv) > 2 else None
-        
+  command = sys.argv[1] if len(sys.argv) > 1 else None
+  arg2 = sys.argv[2] if len(sys.argv) > 2 else None
+  arg3 = sys.argv[3] if len(sys.argv) > 3 else None
   toscayaml = {}
-	
-  if filename is not None:
-    tosca = ToscaTemplate(filename)
-    if tosca is not None:
-      toscayaml = tosca.yamldef
 
+  if command == 'library':
+    filename = arg2
+    if filename is not None:
+      tosca = ToscaTemplate(filename)
+      if tosca is not None:
+        toscayaml = tosca.yamldef
+        prepare_workflows(toscayaml)
+
+  if command == 'model':
+    model_name = arg2
     print "Push data into Consul"
-    upload(toscayaml, instance_name)
+    upload(toscayaml, model_name)
 			
 if __name__ == '__main__':
   main()

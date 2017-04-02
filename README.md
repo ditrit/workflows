@@ -5,13 +5,19 @@ This is a very first implementation for TOSCA 1.1 explicit workflows.
 The purpose is to implement TOSCA declarative workflows defined at node type and relationship type level as described in the OASIS normative document 
 [TOSCA Simple Profile in YAML Version 1.1](http://docs.oasis-open.org/tosca/TOSCA-Simple-Profile-YAML/v1.1/TOSCA-Simple-Profile-YAML-v1.1.pdf).
 
-Workflow definition is parsed into a simple rule based RETE like engine. 
-Orchestration is launched simply inserting facts (nodes and relationships instances) into the RETE network.
-Both facts and RETE rules are stored into Consul. 
+Workflow definition is parsed into a simple rule based RETE like engine.
+Engine uses a set of workers which insert facts into RETE rules and execute operations.
+Workers are sateless and coordination is provided using LINDA coordination language primitives.
+Consul is used as storage backend (used for facts and RETE rules) and as the Tuple-Space used by workers.
+
+## Resiliency and high availibility
+- Facts are ditributed between workers in such a way two workers can consume each fact at all time.
+- If a worker die or fail before releasing a fact, the second worker consumes this fact less than a second later.
+- Facts distribution is triggered 3 seconds after each worker creation or die.
 
 ## The exemple 
 - Workflows implemented are standard `install and uninstall TOSCA workflow as defined in § "7.4.2 Weaving improvements" of the normative document.
-- Facts used as exemple describe connections between 4 nodes : [`A-->B B-->D D-->C and A -->C], each node being hosted onto a 'srv' node (A is hosted on srvA, B is hosted on srvB, C is hosted on srvC and D is hosted on D). 
+- Facts used as exemple describe connections between 4 nodes (`A-->B B-->D D-->C and A -->C ), each one node being hosted onto an other node (A is hosted on srvA, B is hosted on srvB, C is hosted on srvC and D is hosted on D). 
 
 ## Running the example
 
@@ -26,10 +32,11 @@ Both facts and RETE rules are stored into Consul.
       - Copy 'workers/.py' into '/usr/local/bin'
    - Copy 'manager/*' on the manager.
 3. Execute :
-   - Parse and upload the exemple on the manager: <pre>python data_to_consul.py normative.yaml</pre>
-   - Launch the workflow from the manager : <pre>consul kv put exec-workflow "{'name': 'install'}"</pre>
+   - Parse and upload a ditrit component library (actually just TOSCA root normative types) : <pre>python upload.py library normative.yaml</pre>
+   - Parse and upload an application model (actually an hardcoded exemple) : <pre>python upload.py model model_name</pre>
+   - Launch the workflow from the manager : <pre>python do-workflow install model_name"</pre>
    - Watch execution from each workflow worker <pre>tail -f /opt/execs</pre>
-4. Shutdown one of the worker during execution and verify it's still working.
+4. Shutdown or create workers or consul server members during execution and verify it's still working.
 
 
 # Caution
