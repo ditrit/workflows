@@ -34,7 +34,8 @@ Consul is used as storage backend (used for facts and RETE rules) and as the Tup
 3. Execute :
    - Parse and upload a ditrit component library (actually just TOSCA root normative types) : <pre>python upload.py library normative.yaml</pre>
    - Parse and upload an application model : <pre>python upload.py model test_model.yaml model_name</pre>
-   - Launch the workflow from the manager : <pre>python do-workflow install model_name"</pre>
+   - Instanciate a deployment from model  : <pre>pyhton run.py model_name instance_name</pre>
+   - [to be updated] Launch the workflow from the manager : <pre>python run install model_name"</pre>
    - Watch execution from each workflow worker <pre>tail -f /opt/execs</pre>
 4. Shutdown or create workers or consul server members during execution and verify it's still working.
 
