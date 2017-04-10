@@ -17,6 +17,12 @@ topology_template:
         - host:
             relationship: tosca.relationships.HostedOn
             node: srvA
+      capabilities:
+        scalable:
+          properties:
+            min_instances: 1
+            max_instances: 5
+            default_instances: 3
 
     B:
       type: tosca.nodes.Root
@@ -34,6 +40,11 @@ topology_template:
         - host:
             relationship: tosca.relationships.HostedOn
             node: srvC
+      capabilities:
+        scalable:
+          properties:
+            max_instances: 3
+            default_instances: 2
 
     D:
       type: tosca.nodes.Root
@@ -47,6 +58,10 @@ topology_template:
 
     srvA:
       type: tosca.nodes.Root
+      capabilities:
+        scalable:
+          properties:
+            default_instances: 3
 
     srvB:
       type: tosca.nodes.Root

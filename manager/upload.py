@@ -6,50 +6,114 @@ import copy
 from tosca_template import ToscaTemplate
 from linda import *
 
-def parse_topology_template(toscayaml, model_name):
+def is_capability_of_type(capability_type, capability_name, capability_def, node_type):
+  """
+       Is the capability 'capability_name' of type 'capability_type' ?
+       For now, just equality between name and type, do be reviewed...
+  """
+  return capability_name == capability_type
+
+def fill_node_scalability_props(node_template, node_def):
+  """
+       Get min, max and default values for scaling values of the node
+  """
+  min_instances = max_instances = default_instances = 1
+  capabilities = node_template.get('capabilities')  
+  if type(capabilities) is dict:
+    for capability_name, capability_def in capabilities.items():
+      if is_capability_of_type('scalable', capability_name, capability_def, node_template.get('type')):
+        if type(capability_def) is dict:
+          properties = capability_def.get('properties')
+          if type(properties) is dict:
+            min_instances = properties.get('min_instances')
+            if min_instances is None:
+              min_instances = 1
+            max_instances = properties.get('max_instances')
+            if max_instances is None:
+              max_instances = 1
+            default_instances = properties.get('default_instances')
+            if default_instances is None:
+              default_instances = 1
+  node_def['nb_min'] = min_instances
+  node_def['nb_max'] = max_instances
+  node_def['nb']     = default_instances
+
+def fill_node_relationships(node_template, model_name, node_key, node_def, model, reltypes):
+  """ 
+      Parse node_template to extract relationships and fill 'in' and 'out' part of 'model_def'
+  """
+  requirements = node_template.get('requirements')  
+  if type(requirements) is list:
+    for requirement in requirements:
+      if type(requirement) is dict:
+        for req_name, req_def in requirement.items():
+          target_name = req_def.get('node')
+          rel_type =  req_def.get('relationship')
+          if isinstance(target_name, basestring) and isinstance(rel_type, basestring):
+            target_key =  "{}/{}".format(model_name, target_name)
+            node_def['out'][rel_type].append(target_key)
+            target_def = model.get(target_key)
+            if target_def is None:
+              model[target_key] = copy.deepcopy({'in': reltypes})
+            model[target_key]['in'][rel_type].append(node_key)
+
+def get_scalability_path(node_key, model):
+  """
+       Compute the scalability path of the current node i.e. from root to the node 
+       Path is built throw 'hosted_on' relationships using the property 'default_instances'.
+  """
+  node_def = model.get(node_key)
+  val = ""
+  if type(node_def) is dict:
+    nb = node_def.get('nb')
+    if nb is None:
+      nb = 1
+    out = node_def.get('out')
+    if type(out) is dict:
+      hosted_on = out.get('tosca.relationships.HostedOn')
+      if type(hosted_on) is list:
+        if len(hosted_on) > 1:
+          print "Error: '{}' is hosted on several nodes '{}'".format(node_key, hosted_on) 
+        if len(hosted_on) == 1:
+          val = "{}/{}".format(get_scalability_path(hosted_on[0], model), nb)
+        else:
+          val = nb
+  return  val
+
+def parse_model(toscayaml, model_name):
   """ 
         Create model internal representation preparing instance status information.
         Also provides for each node the set of outgoing and ingoing relations. 
   """
-  facts = {}
+  model = {}
   node_nb = {}
 
-  reltypes = { typename: [] for typename in eval(linda_rd('relationship_type_names')) }	
+  reltypes = { typename: [] for typename in eval(linda_rd('relationship_type_names')) }
   topology_template = toscayaml.get('topology_template')
   if type(topology_template) is dict:
     node_templates = topology_template.get('node_templates')
     if type(node_templates) is dict:
       for node_name, node_template in node_templates.items():
-        fact_key = "{}/{}/{}".format(model_name, node_name, 1)
-        fact_def = facts.get(fact_key)
-        if fact_def is None:
-          fact_def = {}
-        fact_def['type'] = node_template.get('type')
-        fact_def['name'] = node_name
-        fact_def['state'] = 'none'
-        fact_def['step']  = 0
-        fact_def['out']   = copy.deepcopy(reltypes)
-        if fact_def.get('in') is None:
-          fact_def['in']  = copy.deepcopy(reltypes)
-        requirements = node_template.get('requirements')  
-        if type(requirements) is list:
-          for requirement in requirements:
-            if type(requirement) is dict:
-              for req_name, req_def in requirement.items():
-                target_name = req_def.get('node')
-                rel_type =  req_def.get('relationship')
-                if isinstance(target_name, basestring) and isinstance(rel_type, basestring):
-                  target_key =  "{}/{}/{}".format(model_name, target_name, 1)
-                  fact_def['out'][rel_type].append(target_key)
-                  target_def = facts.get(target_key)
-                  if target_def is None:
-                    facts[target_key] = copy.deepcopy({'in': reltypes})
-                  facts[target_key]['in'][rel_type].append(fact_key)
-        facts[fact_key] = fact_def
+        node_key = "{}/{}".format(model_name, node_name)
+        node_def = model.get(node_key)
+        if node_def is None:
+          node_def = {}
+        node_def['type'] = node_template.get('type')
+        node_def['name'] = node_name
+        node_def['state'] = 'none'
+        node_def['step']  = 0
+        node_def['out']   = copy.deepcopy(reltypes)
+        if node_def.get('in') is None:
+          node_def['in']  = copy.deepcopy(reltypes)
+        fill_node_relationships(node_template, model_name, node_key, node_def, model, reltypes)
+        fill_node_scalability_props(node_template, node_def) 
+        model[node_key] = node_def
 
-  linda_out("facts", facts.keys())
-  for fact_key, fact_def in facts.items():
-    linda_out("Fact/{}".format(fact_key), fact_def)
+  linda_out("Model/{}".format(model_name), time.time())
+  linda_out("Model/{}/keys".format(model_name), model.keys())
+  for node_key, node_def in model.items():
+    node_def['scalability_path'] = get_scalability_path(node_key, model)
+    linda_out("Model/{}".format(node_key), node_def)
 
 def parse_declarative_workflows(toscayaml):
   """
@@ -57,7 +121,7 @@ def parse_declarative_workflows(toscayaml):
     Workflows defintion is extracted from the set of 'node_types' and 'relationship_types' definition 
   """
   states_order    = {}
-	
+
   # Part of the workflows defined in nodes have to be parsed before the part defined in relations. 
   nt_def = toscayaml.get('node_types')
   rt_def = toscayaml.get('relationship_types')
@@ -92,7 +156,7 @@ def parse_declarative_workflows(toscayaml):
                   new_state = action.get('set_state')
                   operation = action.get('call_operation')
                   rete['ReteNode/{}/{}/{}'.format(workflow_name, typename, step)] = \
-                      {	'weaving': {'in': {}, 'out': {}},
+                      { 'weaving': {'in': {}, 'out': {}},
                         'facts': [], 
                         'set_state': new_state, 
                         'call_operation': operation }
@@ -144,7 +208,7 @@ def parse_declarative_workflows(toscayaml):
 
                 keyrete  = 'ReteNode/{}/{}/{}'.format(workflow_name, nodetype, find_step)
                 rete[keyrete]['weaving'][direction][typename]= {'wait_step': wait_step, 'facts': [], 'activity': action }
-								
+
   # insertion du reseau rete dans Consul
   for key in rete:
     linda_out(key, rete[key])
@@ -177,11 +241,8 @@ def main(args=None):
       tosca = ToscaTemplate(filename)
       if tosca is not None:
         toscayaml = tosca.yamldef
-        parse_topology_template(toscayaml, model_name) 
+        parse_model(toscayaml, model_name) 
 
-  linda_out('initworkers', time.time())
-  
-			
 if __name__ == '__main__':
   main()
              
