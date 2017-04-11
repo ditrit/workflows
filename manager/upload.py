@@ -75,7 +75,7 @@ def get_scalability_path(node_key, model):
         if len(hosted_on) > 1:
           print "Error: '{}' is hosted on several nodes '{}'".format(node_key, hosted_on) 
         if len(hosted_on) == 1:
-          val = "{}/{}".format(get_scalability_path(hosted_on[0], model), nb)
+          val = "{}:{}".format(get_scalability_path(hosted_on[0], model), nb)
         else:
           val = nb
   return  val
@@ -138,6 +138,7 @@ def parse_declarative_workflows(toscayaml):
         workflow = node_workflows.get(workflow_name)
 
         if workflow:
+          linda_out("DeclarativeWorkflow/{}".format(workflow_name), time.time())
           steps = workflow.get('steps')
           if steps:
             # States and related steps of the workflow have to be registered for weaving.

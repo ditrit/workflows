@@ -11,13 +11,14 @@ Workers are sateless and coordination is provided using LINDA coordination langu
 Consul is used as storage backend (used for facts and RETE rules) and as the Tuple-Space used by workers.
 
 ## Resiliency and high availibility
-- Facts are ditributed between workers in such a way two workers can consume each fact at all time.
-- If a worker die or fail before releasing a fact, the second worker consumes this fact less than a second later.
-- Facts distribution is triggered 3 seconds after each worker creation or die.
+- No more facts distribution : each worker launch a thread for each fact of the instance whose status is set as ready in the Space. 
+- Linda coordination provides distribution of operations whatever the number of workers.
+- Consul provides high availibility, resiliency and coherency at Space level. 
 
 ## The exemple 
 - Workflows implemented are standard `install and uninstall TOSCA workflow as defined in § "7.4.2 Weaving improvements" of the normative document.
-- Facts used as exemple describe connections between 4 nodes (`A-->B B-->D D-->C and A -->C ), each one node being hosted onto an other node (A is hosted on srvA, B is hosted on srvB, C is hosted on srvC and D is hosted on D). 
+- The Model used as exemple describe connections between 4 nodes (`A-->B B-->D D-->C and A -->C ), each one node being hosted onto an other node (A is hosted on srvA, B is hosted on srvB, C is hosted on srvC and D is hosted on D). 
+- Default scaling is used on several nodes. 19 real nodes are built when the 'install' workflow is executed for an instance of the model.
 
 ## Running the example
 
@@ -28,14 +29,17 @@ Consul is used as storage backend (used for facts and RETE rules) and as the Tup
 2. Installation :
    - Install a consul agent and join to the cluster for each worker and the manager.
    - For each workflow worker :
-      - copy 'workers/initworker.json' into the consul config directory. 
-      - Copy 'workers/.py' into '/usr/local/bin'
-   - Copy 'manager/*' on the manager.
+      - copy 'workers/watches.json' '/etc/consul.d' (consul config directory). 
+      - Copy 'workers/wdt.py' into '/usr/local/bin'
+      - Copy 'utils/linda.py' into '/usr/local/bin'
+   - For the manager :
+      - copy 'manager/{upload.py, run.py}' into '/usr/local/bin'.
+      - copy 'utils/*' into '/usr/local/bin'.
 3. Execute :
    - Parse and upload a ditrit component library (actually just TOSCA root normative types) : <pre>python upload.py library normative.yaml</pre>
-   - Parse and upload an application model : <pre>python upload.py model test_model.yaml model_name</pre>
-   - Instanciate a deployment from model  : <pre>pyhton run.py model_name instance_name</pre>
-   - [to be updated] Launch the workflow from the manager : <pre>python run.py install model_name"</pre>
+   - Parse and upload an application model : <pre>python upload.py model test_model.yaml un_model</pre>
+   - Instanciate a deployment from model  : <pre>pyhton run.py instanciate un_model une_instance</pre>
+   - Launch the workflow from the manager : <pre>python run.py workflow install un_model une_instance"</pre>
    - Watch execution from each workflow worker <pre>tail -f /opt/execs</pre>
 4. Shutdown or create workers or consul server members during execution and verify it's still working.
 

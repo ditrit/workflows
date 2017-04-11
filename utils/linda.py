@@ -79,3 +79,10 @@ def linda_rd(key, categ='kv'):
       val = ret.json()
   return val
 
+def linda_rm(key, categ='kv'):
+  """
+    Implement 'delete' operator.
+  """
+  ret = requests.delete("{}/{}/{}".format(urlprefix, categ, key))
+  return ret.json()
+

@@ -1,5 +1,0 @@
-{"watches": [
-  {"type": "nodes", "handler": "python /usr/local/bin/initworker.py install >> /opt/execs"},
-  {"type": "key", "key": "initworkers", "handler": "python /usr/local/bin/initworker.py install >> /opt/execs"}
-]}
-
