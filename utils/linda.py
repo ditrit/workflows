@@ -55,12 +55,17 @@ def linda_in(key, categ='kv'):
         ret = requests.put("{}/{}/{}".format(urlprefix, categ, key), data=str(time.time()))
         wait = not ret.json()
 
-def linda_out(key, value, categ='kv'):
+def linda_out(key, value, categ='kv', cas=False):
   """
     Implement the 'out' operator of Linda.
   """
-  # as simple as writing a value
-  ret = requests.put("{}/{}/{}".format(urlprefix, categ, key), data=str(value))
+  suffix=""
+  if cas:
+    r = requests.get("{}/{}/{}".format(urlprefix, categ, key))  
+    if r.status_code == 200:
+      index   = jsonval["ModifyIndex"] 
+      suffix = "?cas={}".format(index)
+  ret = requests.put("{}/{}/{}{}".format(urlprefix, categ, key, suffix), data=str(value))
   return ret.json()
 
 def linda_rd(key, categ='kv'):
