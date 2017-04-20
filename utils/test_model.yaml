@@ -23,6 +23,17 @@ topology_template:
             min_instances: 1
             max_instances: 5
             default_instances: 3
+      interfaces:
+        Standard:
+          inputs:
+             toto: a
+             num: 5
+          create: mon_create.sh
+          configure:
+            inputs:
+              nb_a: 3
+              toto: b
+            implementation: mon_configure.sh
 
     B:
       type: tosca.nodes.Root

@@ -13,6 +13,54 @@ def is_capability_of_type(capability_type, capability_name, capability_def, node
   """
   return capability_name == capability_type
 
+def fill_node_properties(node_template, node_def):
+  """
+       Get properties of the node
+  """
+  properties = node_template.get('properties')  
+  if type(properties) is dict:
+    node_def['properties'] = properties
+
+def fill_node_operations(node_template, node_def):
+  operations = {}
+  if node_def['type'].startswith("tosca.nodes."):
+    interface_prefix = 'tosca.interfaces.node.lifecycle.'
+  interfaces = node_template.get('interfaces')  
+  if type(interfaces) is dict:
+    for interface_name, interface_def in interfaces.items():
+      if interface_name.find(".") == -1: 
+        interface_id = interface_prefix + interface_name
+      else:
+        interface_id = interface_name
+      inputs_interface = {}
+      if type(interface_def) is dict:
+        if 'inputs' in interface_def:
+          inputs_interface = interface_def['inputs']
+        operations_keys = interface_def.keys()
+        operations_keys.remove('inputs')
+        for operation_name in operations_keys:
+          operation_def = interface_def[operation_name]
+          operation_id = "{}.{}".format(interface_id, operation_name)
+          operation_value = ""
+          inputs = copy.deepcopy(inputs_interface) 
+          if isinstance(operation_def, basestring):
+            operation_value = operation_def
+          else:
+            if isinstance(operation_def, dict):
+              implementation = operation_def.get('implementation')
+              if isinstance(implementation, basestring):
+                operation_value = implementation
+              else:
+                if isinstance(implementation, dict):
+                  primary = implementation.get('primary')
+                  if isinstance(primary, basestring):
+                    operation_value = primary
+              inputs_ope = operation_def.get('inputs')
+              if isinstance(inputs_ope, dict):
+                inputs.update(inputs_ope)
+          operations[operation_id] = {'name': operation_value, 'inputs': inputs}
+  node_def['operations'] = operations 
+
 def fill_node_scalability_props(node_template, node_def):
   """
        Get min, max and default values for scaling values of the node
@@ -105,8 +153,10 @@ def parse_model(toscayaml, model_name):
         node_def['out']   = copy.deepcopy(reltypes)
         if node_def.get('in') is None:
           node_def['in']  = copy.deepcopy(reltypes)
+        fill_node_properties(node_template, node_def)
         fill_node_relationships(node_template, model_name, node_key, node_def, model, reltypes)
         fill_node_scalability_props(node_template, node_def) 
+        fill_node_operations(node_template, node_def) 
         model[node_key] = node_def
 
   linda_out("Model/{}".format(model_name), time.time())
