@@ -1,6 +1,6 @@
 ---
 
-- name: Rapatrier le binaire consul
+- name: Recuperer le binaire leofs
   get_url: 
     url: https://github.com/leo-project/leofs/releases/download/{{ leofs_version }}/{{ leofs_rpm }}
     dest: /tmp/{{ leofs_rpm }}

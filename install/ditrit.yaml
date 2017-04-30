@@ -1,14 +1,15 @@
 ---
 
-- hosts: lxc-host
+- hosts: host 
   remote_user: root
   roles:
-    - space
+    - lxc_containers
 
-- hosts: dspace
+- hosts: consul_cluster
   remote_user: root
   roles:
-    - consul
+    - consul_install
+    - consul_server
 
 - hosts: leofs_manager
   remote_user: root
@@ -33,3 +34,14 @@
   roles:
     - leofs_start
 
+- hosts: workflows
+  remote_user: root
+  roles:
+    - consul_install
+    - consul_agent
+
+- hosts: operations
+  remote_user: root
+  roles:
+    - consul_install
+    - consul_agent

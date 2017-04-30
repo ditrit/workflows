@@ -1,0 +1,13 @@
+---
+
+- name: Configuration du consul server
+  template: 
+    src: consul_server.json.j2
+    dest: /etc/consul.d/consul_server.json
+
+- name: Demarrage du service
+  systemd:
+    name: consul
+    enabled: yes
+    state: started
+

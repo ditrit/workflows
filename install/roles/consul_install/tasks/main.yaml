@@ -1,5 +1,10 @@
 ---
 
+- name: Installation des prerequis
+  yum:
+    name: unzip
+    state: present
+
 - name: Rapatrier le binaire consul
   get_url:
     url: https://releases.hashicorp.com/consul/{{ consul_version }}/{{ consul_zip }}
@@ -7,20 +12,6 @@
   delegate_to: 127.0.0.1
   run_once: True
 
-- name: attendre un peu...
-  pause:
-    seconds: 8
-
-- name: Installation utilitaires
-  yum:
-    name: "{{ item }}"
-    state: present
-  with_items:
-    - zip
-    - unzip
-    - wget
-    - net-tools
-  
 - name: Déploiement du binaire consul
   unarchive:
     src: '/tmp/{{ consul_zip }}'
@@ -36,11 +27,6 @@
     src: 'consul.service'
     dest: /etc/systemd/system/consul.service
 
-- name: Configuration du consul server
-  template: 
-    src: consul_server.json.j2
-    dest: /etc/consul.d/consul_server.json
-
 - name: Creation du repertoire consul-data
   file:
     path: /var/consul
@@ -48,11 +34,3 @@
 
 - name: Generation du node-id necessaire en conteneur
   shell: cat /proc/sys/kernel/random/uuid > /var/consul/node-id
-
-
-- name: Demarrage du service
-  systemd:
-    name: consul
-    enabled: yes
-    state: started
-

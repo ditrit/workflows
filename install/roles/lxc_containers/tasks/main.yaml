@@ -1,0 +1,97 @@
+---
+- name: Container creation
+  lxc_container:
+    name: "{{ hostvars[item]['name'] }}"
+    template: 'centos'
+    state: 'stopped'
+    template_options: --release 7
+    container_config: 
+      - "lxc.network.ipv4={{ item }}"
+      - "lxc.network.ipv4.gateway={{ hostvars[item]['gateway'] }}"
+  with_items: 
+    - "{{ groups['ditrit_srvs'] }}"
+
+- name: Correct include in lxc config for centos 7
+  lineinfile:
+    dest: /var/lib/lxc/{{ hostvars[item]['name'] }}/config
+    regexp: '^lxc.include'
+    line: 'lxc.include = /usr/share/lxc/config/fedora.common.conf'
+  with_items:
+    - "{{ groups['ditrit_srvs'] }}"
+
+- name: ip adress of eth0 is fixed makes no boot protocol to be used
+  lineinfile:
+    dest: /var/lib/lxc/{{ hostvars[item]['name'] }}/rootfs/etc/sysconfig/network-scripts/ifcfg-eth0
+    regexp: '^BOOTPROTO'
+    line: BOOTPROTO=none
+  with_items:
+    - "{{ groups['ditrit_srvs'] }}"
+
+- name: resolv.conf
+  file:
+    dest: /var/lib/lxc/{{ hostvars[item]['name'] }}/rootfs/etc/resolv.conf
+    state: absent
+  with_items:
+    - "{{ groups['ditrit_srvs'] }}"
+
+- name: resolv.conf
+  lineinfile:
+    dest: /var/lib/lxc/{{ hostvars[item]['name'] }}/rootfs/etc/resolv.conf
+    create: yes
+    line: "search lxc\nnameserver {{ hostvars[item]['gateway'] }}"
+  with_items:
+    - "{{ groups['ditrit_srvs'] }}"
+
+- name: Allow root login for ssh 
+  lineinfile:
+    dest: /var/lib/lxc/{{ hostvars[item]['name'] }}/rootfs/etc/ssh/sshd_config
+    regexp: '^#PermitRootLogin'
+    line: 'PermitRootLogin yes'
+  with_items:
+    - "{{ groups['ditrit_srvs'] }}"
+
+- name: Create .ssh directory for containers
+  file:
+    path: /var/lib/lxc/{{ hostvars[item]['name'] }}/rootfs/root/.ssh
+    state: directory
+    mode: 0700
+  with_items:
+    - "{{ groups['ditrit_srvs'] }}"
+
+- name: creation of  the authorized_keys file
+  file:
+    path: /var/lib/lxc/{{ hostvars[item]['name'] }}/rootfs/root/.ssh/authorized_keys
+    state: touch 
+    mode: 0644
+  with_items:
+    - "{{ groups['ditrit_srvs'] }}"
+
+- name: Acces par clef depuis le host
+  authorized_key:
+    user: root
+    key: "{{ lookup('file', '/root/.ssh/id_rsa.pub') }}"
+    path: /var/lib/lxc/{{ hostvars[item]['name'] }}/rootfs/root/.ssh/authorized_keys
+    state: present
+  with_items:
+    - "{{ groups['ditrit_srvs'] }}"
+    
+- name: Demarrage des conteneurs
+  lxc_container:
+    name: "{{ hostvars[item]['name'] }}"
+    state: 'started'
+  with_items: 
+    - "{{ groups['ditrit_srvs'] }}"
+
+- name: initialisation mot de passe root
+  lxc_container:
+    name: "{{ hostvars[item]['name'] }}"
+    container_command: |
+      chpasswd <<< "root:@ditrit@"
+  with_items:
+    - "{{ groups['ditrit_srvs'] }}"
+
+- name: Wait network
+  pause:
+    seconds: 5
+
+

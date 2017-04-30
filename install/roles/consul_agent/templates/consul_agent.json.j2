@@ -1,0 +1,18 @@
+{
+"bind_addr": "{{ inventory_hostname }}",
+"server": false,
+"datacenter": "dc1",
+"data_dir": "/var/consul",
+"encrypt": "EXz7LFN8hpQ4id8EDYiFoQ==",
+"log_level": "INFO",
+"enable_syslog": true,
+"enable_debug": true,
+"node_name": "{{ ansible_hostname }}",
+"leave_on_terminate": false,
+"skip_leave_on_interrupt": true,
+"start_join": [ 
+{% for host in groups['consul_cluster'] %}
+ "{{ host }}"{% if not loop.last %},{% endif %}
+{% endfor %}
+  ]
+ }

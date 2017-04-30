@@ -7,6 +7,9 @@ topology_template:
 
     A:
       type: tosca.nodes.Root
+      properties:
+        prop1: 12
+        prop2: tagada
       requirements:
         - A2B:
             relationship: tosca.relationships.ConnectsTo
