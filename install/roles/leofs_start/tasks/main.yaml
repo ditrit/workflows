@@ -1,0 +1,6 @@
+---
+
+- name: Define Consistency Level
+  shell: cd /usr/local/leofs/leofs_current && ./leofs-adm start
+  when: instance == 0
+

@@ -1,0 +1,17 @@
+---
+
+- name: Define nodename in conf file
+  lineinfile:
+    dest: /usr/local/leofs/leofs_current/leo_gateway/etc/leo_gateway.conf
+    regexp: '^managers'
+    line: "managers = [{% for host in groups['leofs_manager'] %}{% if hostvars[host].manager_role=='m' %}manager_0@{{ host }}{% endif %}{% if hostvars[host].manager_role=='s' %}manager_1@{{ host }}{% endif %}{% if not loop.last %},{% endif %}{% endfor %}]"
+
+- name: Define nodename in conf file
+  lineinfile:
+    dest: /usr/local/leofs/leofs_current/leo_gateway/etc/leo_gateway.conf
+    regexp: '^nodename'
+    line: 'nodename = gateway_{{ instance }}@{{ inventory_hostname }}'
+
+- name: Start Storage
+  shell: /usr/local/leofs/leofs_current/leo_gateway/bin/leo_gateway start
+

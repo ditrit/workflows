@@ -1,0 +1,17 @@
+---
+
+- name: Define nodename in conf file
+  lineinfile:
+    dest: /usr/local/leofs/leofs_current/leo_storage/etc/leo_storage.conf
+    regexp: '^managers'
+    line: "managers = [{% for host in groups['leofs_manager'] %}{% if hostvars[host].manager_role=='m' %}manager_0@{{ host }}{% endif %}{% if hostvars[host].manager_role=='s' %}manager_1@{{ host }}{% endif %}{% if not loop.last %},{% endif %}{% endfor %}]"
+
+- name: Define nodename in conf file
+  lineinfile:
+    dest: /usr/local/leofs/leofs_current/leo_storage/etc/leo_storage.conf
+    regexp: '^nodename'
+    line: 'nodename = storage_{{ instance }}@{{ inventory_hostname }}'
+
+- name: Start Storage
+  shell: /usr/local/leofs/leofs_current/leo_storage/bin/leo_storage start
+

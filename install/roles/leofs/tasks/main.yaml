@@ -1,0 +1,47 @@
+---
+
+- name: Creation du user leofs
+  user:
+    name: "{{ leofs_user }}"
+    group: "{{ leofs_group }}"
+    state: present
+
+- name: Define nodename in conf file
+  lineinfile:
+    dest: /usr/local/leofs/{{ leofs_version }}/{{ item.package }}/etc/{{ item.conf }}
+    regexp: '^nodename '
+    line: 'nodename = {{ item.nodename }}@{{ inventory_hostname }}'
+  with_items:
+    - { package: leo_gateway, conf=leo_gateway.conf, nodename: gateway_0 } 
+    - { package: leo_manager_0, conf=leo_manager.conf, nodename: manager_0 } 
+    - { package: leo_manager_1, conf=leo_manager.conf, nodename: manager_1 } 
+    - { package: leo_storage, conf=leo_storage.conf, nodename: storage_0 } 
+
+- name: Define Consistency Level
+  lineinfile:
+    dest: /usr/local/leofs/{{ leofs_version }}/leo_manager_0/etc/leo_manager.conf
+    regexp: '^nodename '
+    line: '{{ item.key }} = {{ item.val }}'
+  with_items:
+    - { key: consistency.num_of_replicas, val: 2 }
+    - { key: consistency.write, val: 1 }
+    - { key: consistency.read, val: 1 }
+    - { key: consistency.delete, val: 1 }
+
+- name: Start Manager-master
+  shell: /usr/local/leofs/{{ leofs_version }}/leo_manager_0/bin/leo_manager start
+
+- name: Start Manager-slave
+  shell: /usr/local/leofs/{{ leofs_version }}/leo_manager_1/bin/leo_manager start
+
+- name: Start storage nodes
+  shell: /usr/local/leofs/{{ leofs_version }}/leo_storage/bin/leo_storage start
+
+- name: Start gateway nodes
+  shell: /usr/local/leofs/{{ leofs_version }}/leo_gateway/bin/leo_gateway start
+
+- name: Start the system
+  shell: | 
+    cd /usr/local/leofs/{{leofs_version }}
+    ./leofs-adm start
+

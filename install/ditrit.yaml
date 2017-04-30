@@ -1,0 +1,35 @@
+---
+
+- hosts: lxc-host
+  remote_user: root
+  roles:
+    - space
+
+- hosts: dspace
+  remote_user: root
+  roles:
+    - consul
+
+- hosts: leofs_manager
+  remote_user: root
+  roles:
+    - leofs_install
+    - leofs_manager
+
+- hosts: leofs_storage
+  remote_user: root
+  roles:
+    - leofs_install
+    - leofs_storage
+
+- hosts: leofs_gateway
+  remote_user: root
+  roles:
+    - leofs_install
+    - leofs_gateway
+
+- hosts: leofs_manager
+  remote_user: root
+  roles:
+    - leofs_start
+

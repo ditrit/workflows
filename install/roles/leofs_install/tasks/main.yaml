@@ -1,0 +1,42 @@
+---
+
+- name: Rapatrier le binaire consul
+  get_url: 
+    url: https://github.com/leo-project/leofs/releases/download/{{ leofs_version }}/{{ leofs_rpm }}
+    dest: /tmp/{{ leofs_rpm }}
+  delegate_to: 127.0.0.1
+  run_once: True
+
+- name: Install prerequisite rpms
+  yum:
+    name: nc
+    state: present
+
+- name: Copy rpm
+  copy:
+    src: "/tmp/{{ leofs_rpm }}"
+    dest: "/opt/{{ leofs_rpm }}"
+    force: no
+
+- name: Installation du package leofs
+  yum:
+    name: "/opt/{{ leofs_rpm }}"
+    state: present
+
+- name: Creation du group leofs
+  group:
+   name: leofs
+   state: present
+
+- name: Creation du user leofs
+  user:
+    name: "{{ leofs_user }}"
+    group: "{{ leofs_group }}"
+    state: present
+
+- name: Lien sur le chemin de base de leofs
+  file:
+    src:  /usr/local/leofs/{{ leofs_version }}
+    dest: /usr/local/leofs/leofs_current
+    state: link
+
