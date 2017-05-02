@@ -1,0 +1,16 @@
+---
+
+- name: Set cluster name
+  lineinfile: 
+    dest: /etc/elasticsearch/elasticsearch.yml
+    regexp: '^cluster.name|#cluster.name'
+    line: 'cluster.name = graylog'
+
+
+- name: Demarrage du service
+  systemd:
+    name: elasticsearch.service
+    enabled: yes
+    state: started
+
+

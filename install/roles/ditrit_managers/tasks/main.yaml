@@ -1,0 +1,12 @@
+---
+
+- name: Installation .py ditrit pour les managers
+  copy: 
+    src: "{{ item }}"
+    dest: /usr/local/bin/
+  with_items:
+    - "../../../workers/oet.py"
+    - "../../../utils/linda.py"
+    - "../../../utils/"
+
+

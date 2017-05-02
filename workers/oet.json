@@ -1,0 +1,3 @@
+{"watches": [
+  {"type": "keyprefix", "prefix": "exec_oet/", "handler": "python /usr/local/bin/oet.py >> /opt/execs"}
+]}

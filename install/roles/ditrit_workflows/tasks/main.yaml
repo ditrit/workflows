@@ -1,0 +1,18 @@
+---
+
+- name: Installation .py ditrit pour les workers de workflow
+  copy: 
+    src: "{{ item }}"
+    dest: /usr/local/bin/
+  with_items:
+    - "../../../workers/wdt.py"
+    - "../../../utils/linda.py"
+
+- name: Installation config watches consul pour les workers de workflow
+  copy: 
+    src: "{{ item }}"
+    dest: /etc/consul.d/
+  with_items:
+    - "../../../workers/wdt.json"
+
+

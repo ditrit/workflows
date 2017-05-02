@@ -19,7 +19,7 @@
   with_items:
     - "{{ groups['ditrit_srvs'] }}"
 
-- name: ip adress of eth0 is fixed makes no boot protocol to be used
+- name: no boot protocol to be used (ip is fixed)
   lineinfile:
     dest: /var/lib/lxc/{{ hostvars[item]['name'] }}/rootfs/etc/sysconfig/network-scripts/ifcfg-eth0
     regexp: '^BOOTPROTO'

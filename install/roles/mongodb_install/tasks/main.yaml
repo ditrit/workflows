@@ -1,0 +1,12 @@
+---
+
+- name: Installation du repository mongodb
+  copy: 
+    src: "{{mongodb_repo}}"
+    dest: /etc/yum.repos.d/
+
+- name: Installation de mongodb
+  yum:
+    name: mongodb-org
+    state: present
+

@@ -1,0 +1,12 @@
+---
+
+- name: Installation du repository graylog
+  yum: 
+    name: "{{graylog_repo_rpm}}"
+    state: present
+
+- name: Installation de graylog
+  yum:
+    name: graylog-server
+    state: present
+

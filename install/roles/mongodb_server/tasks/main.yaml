@@ -1,0 +1,8 @@
+---
+
+- name: Demarrage du service
+  systemd:
+    name: mongod.service
+    enabled: yes
+    state: started
+

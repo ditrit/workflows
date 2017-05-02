@@ -39,9 +39,21 @@
   roles:
     - consul_install
     - consul_agent
+    - ditrit_workflows
 
 - hosts: operations
   remote_user: root
   roles:
     - consul_install
     - consul_agent
+    - ditrit_operations
+
+- hosts: managers
+  remote_user: root
+  roles:
+    - consul_install
+    - consul_agent
+    - ditrit_managers
+
+
+

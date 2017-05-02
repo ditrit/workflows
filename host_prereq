@@ -1,0 +1,9 @@
+#!/bin/bash
+
+# prerequis : sur vm centos nue
+yum -y update
+yum -y install epel-release
+yum -y install yum install lxc lxc-templates bridge-utils  bzip2 tar gzip wget net-tools
+
+
+

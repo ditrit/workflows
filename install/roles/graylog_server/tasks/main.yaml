@@ -1,0 +1,8 @@
+---
+
+- name: Demarrage du service
+  systemd:
+    name: graylog-server.service
+    enabled: yes
+    state: started
+

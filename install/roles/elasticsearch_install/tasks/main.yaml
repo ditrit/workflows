@@ -1,0 +1,21 @@
+---
+
+- name: Installation du repository elasticsearch
+  copy: 
+    src: elasticsearch.repo
+    dest: /etc/yum.repos.d/
+
+- name: Copie de la clef elasticsearch
+  copy: 
+    src: GPG-KEY-elasticsearch
+    dest: /tmp/
+
+- name: Importation de la clef elasticsearch
+  rpm_key:
+    state: present
+    key: /tmp/GPG-KEY-elasticsearch
+
+- name: Installation de elasticsearch
+  yum:
+    name: elasticsearch
+    state: present
