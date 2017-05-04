@@ -1,0 +1,17 @@
+---
+
+- name: Installation des prerequis ditrit 
+  yum: 
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - python-six
+    - PyYAML
+    - python-requests
+    - python-flask 
+
+- name: Fichier logs
+  file:
+    path: /opt/execs
+    state: touch
+

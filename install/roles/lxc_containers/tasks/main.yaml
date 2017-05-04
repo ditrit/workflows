@@ -91,7 +91,10 @@
     - "{{ groups['ditrit_srvs'] }}"
 
 - name: Wait network
-  pause:
-    seconds: 5
+  wait_for:
+    host: "{{ item }}"
+    port: 22
+  with_items:
+    - "{{ groups['ditrit_srvs'] }}"
 
 

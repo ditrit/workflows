@@ -39,6 +39,7 @@
   roles:
     - consul_install
     - consul_agent
+    - ditrit_common
     - ditrit_workflows
 
 - hosts: operations
@@ -46,6 +47,7 @@
   roles:
     - consul_install
     - consul_agent
+    - ditrit_common
     - ditrit_operations
 
 - hosts: managers
@@ -53,6 +55,7 @@
   roles:
     - consul_install
     - consul_agent
+    - ditrit_common
     - ditrit_managers
 
 
