@@ -159,6 +159,13 @@ def parse_model(toscayaml, model_name):
         fill_node_operations(node_template, node_def) 
         model[node_key] = node_def
 
+  model_names = linda_rd("Model")
+  if model_names is None:
+    model_names = [] 
+  else:
+    model_names = eval(model_names)
+  model_names.append(model_name)
+  linda_out("Model", list(set(model_names)))
   linda_out("Model/{}".format(model_name), time.time())
   linda_out("Model/{}/keys".format(model_name), model.keys())
   for node_key, node_def in model.items():
@@ -264,6 +271,20 @@ def parse_declarative_workflows(toscayaml):
   for key in rete:
     linda_out(key, rete[key])
 
+def library(filename):
+  if filename is not None:
+    tosca = ToscaTemplate(filename)
+    if tosca is not None:
+      toscayaml = tosca.yamldef
+      parse_declarative_workflows(toscayaml)
+
+def model(filename, model_name):
+  if filename is not None:
+    tosca = ToscaTemplate(filename)
+    if tosca is not None:
+      toscayaml = tosca.yamldef
+      parse_model(toscayaml, model_name) 
+
 def main(args=None):
   """
     Upload a TOSCA template given in arguments (imports is ok).
@@ -275,24 +296,15 @@ def main(args=None):
   command = sys.argv[1] if len(sys.argv) > 1 else None
   arg2 = sys.argv[2] if len(sys.argv) > 2 else None
   arg3 = sys.argv[3] if len(sys.argv) > 3 else None
-  toscayaml = {}
 
   if command == 'library':
     filename = arg2
-    if filename is not None:
-      tosca = ToscaTemplate(filename)
-      if tosca is not None:
-        toscayaml = tosca.yamldef
-        parse_declarative_workflows(toscayaml)
+    library(filename)
 
   if command == 'model':
     filename = arg2
     model_name = arg3
-    if filename is not None:
-      tosca = ToscaTemplate(filename)
-      if tosca is not None:
-        toscayaml = tosca.yamldef
-        parse_model(toscayaml, model_name) 
+    model(filename, model_name)
 
 if __name__ == '__main__':
   main()

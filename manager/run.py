@@ -96,6 +96,14 @@ def prepare_instance(model_name, instance_name):
       linda_out("Fact/{}/{}".format(model_name, instance_name), time.time())
       linda_out("Fact/{}/{}/keys".format(model_name, instance_name), facts.keys())
 
+      instance_names = linda_rd("Instance/{}".format(model_name))
+      if instance_names is None:
+        instance_names = []
+      else:
+        instance_names = eval(instance_names)
+      instance_names.append(instance_name)
+      linda_out("Instance/{}".format(model_name), list(set(instance_names)))
+
 def execute_workflow(workflow_name, model_name, instance_name):
   """ 
     execute the workflow for the instance of the model

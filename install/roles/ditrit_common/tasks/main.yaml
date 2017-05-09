@@ -1,5 +1,10 @@
 ---
 
+- name: Installation epel
+  yum: 
+    name: epel-release
+    state: present
+
 - name: Installation des prerequis ditrit 
   yum: 
     name: "{{ item }}"
@@ -9,6 +14,7 @@
     - PyYAML
     - python-requests
     - python-flask 
+    - python-pip
 
 - name: Fichier logs
   file:

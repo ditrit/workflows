@@ -23,25 +23,20 @@ Consul is used as storage backend (used for facts and RETE rules) and as the Tup
 ## Running the example
 
 1. Prerequisite :
-   - An up and running consul cluster (tested with 3 consul servers)
-   - A set of servers for workflow workers (tested with 3 servers). 
-   - A server for manager (can be one of the workers)
+   - An up and running Linux OS with ansible 2.3, lxc and libvirtd installed (tested with Redhat 7 and Ubuntu 16.10)
 2. Installation :
-   - Install a consul agent and join to the cluster for each worker and the manager.
-   - For each workflow worker :
-      - copy 'workers/watches.json' '/etc/consul.d' (consul config directory). 
-      - Copy 'workers/wdt.py' into '/usr/local/bin'
-      - Copy 'utils/linda.py' into '/usr/local/bin'
-   - For the manager :
-      - copy 'manager/{upload.py, run.py}' into '/usr/local/bin'.
-      - copy 'utils/*' into '/usr/local/bin'.
-3. Execute :
-   - Parse and upload a ditrit component library (actually just TOSCA root normative types) : <pre>python upload.py library normative.yaml</pre>
-   - Parse and upload an application model : <pre>python upload.py model test_model.yaml un_model</pre>
-   - Instanciate a deployment from model  : <pre>pyhton run.py instanciate un_model une_instance</pre>
-   - Launch the workflow from the manager : <pre>python run.py workflow install un_model une_instance"</pre>
-   - Watch execution from each workflow worker <pre>tail -f /opt/execs</pre>
-4. Shutdown or create workers or consul server members during execution and verify it's still working.
+   - Clone the repository : <pre>git clone https://github.com/ditrit/workflows.git</pre>.
+   - Go into the <pre>install</pre> directory.
+   - Adapt the inventory <pre>hosts</pre> file with adequate ip addresses.
+   - Install ditrit as root : <pre>ansible-playbook -i hosts ditrit.yaml</pre>
+   - Go into one of the manager containers : <pre>lxc-attach -n manager1</pre>
+3. Use Ditrit:
+   - Parse and upload a ditrit component library (actually just TOSCA root normative types) : <pre>curl -X PUT http://localhost:5000/library -F "file=@normative.yaml"</pre>
+   - Parse and upload an application model : <pre>curl -X PUT "http://localhost:5000/model?name=un_model" -F "file=@test_model.yaml"</pre>
+   - Instanciate a deployment from model  : <pre>curl -X PUT "http://localhost:5000/instance?model=un_model&name=une_instance"</pre>
+   - Launch a workflow : <pre>curl -X PUT "http://localhost:5000/exec?model=un_model&instance=une_instance&workflow=install"</pre>
+   - Watch execution on each workflow worker <pre>tail -f /opt/execs</pre>
+4. Destroy, stop or start workers or consul server members during execution and verify it's still working.
 
 
 # Caution

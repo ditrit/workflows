@@ -5,6 +5,10 @@
     name: python-flask
     state: present
 
+- name: Installation modules python via pip
+  pip: 
+    name: flask-restplus
+
 - name: Installation .py ditrit pour les managers
   copy: 
     src: "{{ item }}"
