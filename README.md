@@ -25,7 +25,7 @@ Consul is used as storage backend (used for facts and RETE rules) and as the Tup
 1. Prerequisite :
    - An up and running Linux OS with ansible 2.3, lxc and libvirtd installed (tested with Redhat 7 and Ubuntu 16.10)
 2. Installation :
-   - Clone the repository : <pre>git clone https://github.com/ditrit/workflows.git</pre>.
+   - Clone the repository : <pre>git clone https://github.com/ditrit/workflows.git</pre>
    - Go into the *install* directory.
    - Adapt the inventory *hosts* file with adequate ip addresses.
    - Install ditrit as root : <pre>ansible-playbook -i hosts ditrit.yaml</pre>
