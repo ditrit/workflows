@@ -24,13 +24,16 @@ Consul is used as storage backend (used for facts and RETE rules) and as the Tup
 
 1. Prerequisite :
    - An up and running Linux OS with ansible 2.3, lxc and libvirtd installed (tested with Redhat 7 and Ubuntu 16.10)
+   - *python2-lxc* is a requirement for the lxc-container module of ansible. If it is not packaged for your distrib, you have to build it from github: [python2-lxc repository](https://github.com/lxc/python2-lxc)
 2. Installation :
    - Clone the repository : <pre>git clone https://github.com/ditrit/workflows.git</pre>
    - Go into the *install* directory.
    - Adapt the inventory *hosts* file with adequate ip addresses.
    - Install ditrit as root : <pre>ansible-playbook -i hosts ditrit.yaml</pre>
    - Go into one of the manager containers : <pre>lxc-attach -n manager1</pre>
+   - Start the manager instance <pre>python /usr/local/bin/manager.py
 3. Use Ditrit:
+   - Swagger API documentation (minimalist...) is available from root url (http://localhost:5000)
    - Parse and upload a ditrit component library (actually just TOSCA root normative types) : <pre>curl -X PUT http://localhost:5000/library -F "file=@normative.yaml"</pre>
    - Parse and upload an application model : <pre>curl -X PUT "http://localhost:5000/model?name=un_model" -F "file=@test_model.yaml"</pre>
    - Instanciate a deployment from model  : <pre>curl -X PUT "http://localhost:5000/instance?model=un_model&name=une_instance"</pre>
