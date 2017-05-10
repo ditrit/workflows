@@ -66,33 +66,3 @@ def parse_csar(csardir):
   
 
 
-          
-        
-
-              
-
-
-    for top, dirs, files in os.walk(csardir):
-      for nm in files:       
-        filepath = os.path.join(top, nm)
-
-    parse = reqparse.RequestParser()
-    parse.add_argument('file', type=FileStorage, location='files', required=True, help="The file must be a valid CSAR archive")
-    args = parse.parse_args()
-    csarfile = args['file']
-    storedFile = '/tmp/{}.{}'.format(time.time(),csarfile.filename)
-    csarfile.save(storedFile)
-    zip_ref = zipfile.ZipFile(storedFile, 'r')
-    tmpdir="/tmp/{}".format(time.time())
-    zip_ref.extractall(tmpdir)
-    zip_ref.close()
-    dircontent = os.listdir(tmpdir)
-    if len(dircontent) == 1: 
-      parse_csar('{}/{}'.format(tmpdir, dircentent[0])
-    else:
-      parse_csar(tmpdir)
-    return True
-
-if __name__ == '__main__':
-  app.run(debug=True, host=0.0.0.0)
-
