@@ -1,5 +1,20 @@
 ---
 
+- name: Consul group
+  group: 
+    name: consul
+    gid: 1100
+    state: present
+
+- name: Consul user
+  user: 
+    name: consul
+    comment: "Consul user"
+    uid: 1100
+    shell: /sbin/nologin
+    home: /var/consul
+    group: consul
+
 - name: Installation des prerequis
   yum:
     name: unzip
@@ -16,21 +31,33 @@
   unarchive:
     src: '/tmp/{{ consul_zip }}'
     dest: /usr/local/bin/
+    owner: root
+    group: consul
+    mode: 750
 
 - name: Creation du repertoire de configuration consul
   file:
     path: /etc/consul.d
     state: directory
+    owner: root
+    group: consul
+    mode: 750
 
 - name: Déploiement du service consul
   copy:
     src: 'consul.service'
     dest: /etc/systemd/system/consul.service
+    owner: root
+    group: consul
+    mode: 750
 
 - name: Creation du repertoire consul-data
   file:
     path: /var/consul
     state: directory
+    owner: consul
+    group: consul
+    mode: 750
 
 - name: Generation du node-id necessaire en conteneur
   shell: cat /proc/sys/kernel/random/uuid > /var/consul/node-id

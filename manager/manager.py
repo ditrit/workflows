@@ -11,6 +11,9 @@ from boto.s3.key import Key as S3Key
 from linda import *
 from upload import library, model
 from run import prepare_instance, execute_workflow
+from csar import parse_csar
+import zipfile
+import os
 
 app = Flask(__name__)
 app.config.from_object(__name__)
@@ -76,7 +79,7 @@ class Library(Resource):
     parse.add_argument('file', type=FileStorage, location='files', required=True)
     args = parse.parse_args()
     toscafile = args['file']
-    storedFile = '/tmp/{}.{}'.format(time.time(),toscafile.name)
+    storedFile = '/tmp/{}.{}'.format(time.time(),toscafile.filename)
     toscafile.save(storedFile)
     library(storedFile)
     return self.get()
@@ -97,7 +100,7 @@ class ToscaModel(Resource):
     args = parse.parse_args()
     modelfile = args['file']
     modelname = args['name']
-    storedFile = '/tmp/{}.{}.yaml'.format(time.time(),modelname)
+    storedFile = '/tmp/{}.{}.yaml'.format(time.time(),modelfile.filename)
     modelfile.save(storedFile)
     model(storedFile, modelname)
     return self.get()
@@ -138,6 +141,26 @@ class ExecWorkflow(Resource):
     execute_workflow(workflow_name, model_name, instance_name)
     return True
 
+@api.route('/csar')
+class CSAR(Resource):
+  def put(self):
+    parse = reqparse.RequestParser()
+    parse.add_argument('file', type=FileStorage, location='files', required=True, help="The file must be a valid CSAR archive")
+    args = parse.parse_args()
+    csarfile = args['file']
+    storedFile = '/tmp/{}.{}'.format(time.time(),csarfile.filename)
+    csarfile.save(storedFile)
+    zip_ref = zipfile.ZipFile(storedFile, 'r')
+    tmpdir="/tmp/{}".format(time.time())
+    zip_ref.extractall(tmpdir)
+    zip_ref.close()
+    dircontent = os.listdir(tmpdir)
+    if len(dircontent) == 1: 
+      parse_csar('{}/{}'.format(tmpdir, dircentent[0])
+    else:
+      parse_csar(tmpdir)
+    return True
+
 if __name__ == '__main__':
-  app.run(debug=True)
+  app.run(debug=True, host=0.0.0.0)
 
