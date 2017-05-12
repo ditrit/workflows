@@ -23,9 +23,7 @@ gateway=10.0.3.1
 10.0.3.12 manager_role=s
 
 [leofs_gateway]
-10.0.3.11 instance=0
-10.0.3.12 instance=1
-10.0.3.13 instance=2
+10.0.3.17 instance=0
 
 [leofs_storage]
 10.0.3.11 instance=0

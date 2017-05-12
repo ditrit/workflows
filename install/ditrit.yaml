@@ -26,6 +26,8 @@
 - hosts: leofs_gateway
   remote_user: root
   roles:
+    - consul_install
+    - consul_agent
     - leofs_install
     - leofs_gateway
 

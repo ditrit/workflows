@@ -1,6 +1,13 @@
 ---
 
-- name: Define Consistency Level
+- name: Start Leofs
   shell: cd /usr/local/leofs/leofs_current && ./leofs-adm start
-  when: instance == 0
+  when: manager_role == 'm'
+
+- name: Create loefs admin user
+  shell: leofs-adm create-user leoadm10 | head -n 2 | sed 's/ //g' | gawk -F':' '{print "consul kv put leofs/leoadm/"$1 " " $2}' | bash
+  when: manager_role == 'm'
+
+
+
 

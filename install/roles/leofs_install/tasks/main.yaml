@@ -9,8 +9,11 @@
 
 - name: Install prerequisite rpms
   yum:
-    name: nc
+    name: "{{ item }}"
     state: present
+  with_items: 
+    - nc
+    - less
 
 - name: Copy rpm
   copy:
