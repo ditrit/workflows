@@ -131,10 +131,26 @@ class ToscaTemplate(ToscaObject):
     
 
   def do_imports(self, tpl, reldir):
-    import_files = tpl['imports'] if 'imports' in tpl else [] 
-    if isinstance(import_files, list):
-      for import_file in import_files:
-        if isinstance(import_file, basestring):
+    imports = tpl['imports'] if 'imports' in tpl else [] 
+    if isinstance(imports, list):
+      for import_def in imports:
+        import_file = None
+        if isinstance(import_def, basestring):
+          import_file = import_def
+        if isinstance(import_def, dict) and len(import_def) > 0:
+          if len(import_def) == 1: 
+            key = import_def.keys()[0]
+            val = import_def.values()[0]
+            if key not in ['repository', 'namespace_uri', 'namespace_prefix']:
+              if isinstance(val, basestring):
+                import_file = val
+              else:
+                if isinstance(val, dict):
+                  import_file = val.get('file')
+          else:
+            if len(import_def) > 1:
+              import_file = import_def.get('file') 
+        if import_file is not None:
           reldir = reldir + "/" if len(reldir)> 0 else ""
           import_tpl = yamlparser.load_yaml(reldir + import_file) 
           if isinstance(import_tpl, dict):

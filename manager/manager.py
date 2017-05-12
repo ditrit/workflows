@@ -146,8 +146,10 @@ class CSAR(Resource):
   def put(self):
     parse = reqparse.RequestParser()
     parse.add_argument('file', type=FileStorage, location='files', required=True, help="The file must be a valid CSAR archive")
+    parse.add_argument('model', required=True, help="Model name can not be blank")
     args = parse.parse_args()
     csarfile = args['file']
+    model_name = args['model']
     storedFile = '/tmp/{}.{}'.format(time.time(),csarfile.filename)
     csarfile.save(storedFile)
     zip_ref = zipfile.ZipFile(storedFile, 'r')
@@ -156,11 +158,11 @@ class CSAR(Resource):
     zip_ref.close()
     dircontent = os.listdir(tmpdir)
     if len(dircontent) == 1: 
-      parse_csar('{}/{}'.format(tmpdir, dircentent[0])
+      parse_csar('{}/{}'.format(tmpdir, dircontent[0]), model_name)
     else:
-      parse_csar(tmpdir)
+      parse_csar(tmpdir, moddel_name)
     return True
 
 if __name__ == '__main__':
-  app.run(debug=True, host=0.0.0.0)
+  app.run(debug=True, host='0.0.0.0')
 

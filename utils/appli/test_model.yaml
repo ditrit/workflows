@@ -1,0 +1,92 @@
+tosca_definitions_version: tosca_simple_yaml_1_0
+
+description: minimal TOSCA application 
+
+imports:
+  - workflows: types/normative.yaml
+
+topology_template:
+  node_templates:
+
+    A:
+      type: tosca.nodes.Root
+      properties:
+        prop1: 12
+        prop2: tagada
+      requirements:
+        - A2B:
+            relationship: tosca.relationships.ConnectsTo
+            node: B
+        - A2C:
+            relationship: tosca.relationships.ConnectsTo
+            node: C
+        - host:
+            relationship: tosca.relationships.HostedOn
+            node: srvA
+      capabilities:
+        scalable:
+          properties:
+            min_instances: 1
+            max_instances: 5
+            default_instances: 3
+      interfaces:
+        Standard:
+          inputs:
+             toto: a
+             num: 5
+          create: scripts/mon_create.sh
+          configure:
+            inputs:
+              nb_a: 3
+              toto: b
+            implementation: scripts/mon_configure.sh
+
+    B:
+      type: tosca.nodes.Root
+      requirements:
+        - B2D:
+            relationship: tosca.relationships.ConnectsTo
+            node: D
+        - host:
+            relationship: tosca.relationships.HostedOn
+            node: srvB
+
+    C:
+      type: tosca.nodes.Root
+      requirements:
+        - host:
+            relationship: tosca.relationships.HostedOn
+            node: srvC
+      capabilities:
+        scalable:
+          properties:
+            max_instances: 3
+            default_instances: 2
+
+    D:
+      type: tosca.nodes.Root
+      requirements:
+        - D2C:
+            relationship: tosca.relationships.ConnectsTo
+            node: C
+        - host:
+            relationship: tosca.relationships.HostedOn
+            node: srvD
+
+    srvA:
+      type: tosca.nodes.Root
+      capabilities:
+        scalable:
+          properties:
+            default_instances: 3
+
+    srvB:
+      type: tosca.nodes.Root
+
+    srvC:
+      type: tosca.nodes.Root
+
+    srvD:
+      type: tosca.nodes.Root
+
+

@@ -15,6 +15,7 @@
     - python-requests
     - python-flask 
     - python-pip
+    - python-boto
 
 - name: Fichier logs
   file:

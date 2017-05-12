@@ -6,9 +6,8 @@ from boto.s3.connection import S3Connection
 from boto.s3.key import Key as S3Key
 
 from linda import *
-from upload import library, model
+from upload import parse_tosca, parse_declarative_workflows, parse_model
 from run import prepare_instance, execute_workflow
-from csar import parse_csar
 import os
 
 def upload_s3(file, key_name, content_type, bucket_name):
@@ -40,7 +39,7 @@ def upload_s3(file, key_name, content_type, bucket_name):
 
     return obj.generate_url(expires_in=0, query_auth=False)
 
-def parse_csar(csardir):
+def parse_csar(csardir, model_name = None):
   entry_file = None
   if os.path.isdir(csardir):
     if 'TOSCA-Metadata' in os.listdir(csardir):
@@ -54,8 +53,8 @@ def parse_csar(csardir):
               tokens = line.split(':')
               if len(tokens) == 2:
                 meta[tokens[0].strip()] = tokens[1].strip()
-          if meta.get('CSAR-Version') == "1.1" and meta.get('TOSCA-Meta-File-Version') == '1.0' and 'Entry-Definitions' in meta:
-            entry_file = meta['Entry-Definitions:']
+          if str(meta.get('CSAR-Version')) == '1.1' and str(meta.get('TOSCA-Meta-File-Version')) == '1.0' and 'Entry-Definitions' in meta.keys():
+            entry_file = meta['Entry-Definitions']
           else:
             print "Error in the provided TOSCA meta file inside the CSAR" 
     yamlfiles = [ filename for filename in os.listdir(csardir) if os.path.splitext(filename)[1] in ['.yaml', '.yml'] ]
@@ -63,6 +62,13 @@ def parse_csar(csardir):
       entry_file = yamlfiles[0]
     else:
       print "A uniq yaml file have to be provided at the root of the CSAR if it does not contain a TOSCA-Metadata directory"
-  
+
+    toscayaml = parse_tosca("{}/{}".format(csardir, entry_file))
+
+    if toscayaml is not None:
+      parse_declarative_workflows(toscayaml)
+      if model_name is not None:
+        parse_model(toscayaml, model_name)
+    
 
 

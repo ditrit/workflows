@@ -271,18 +271,22 @@ def parse_declarative_workflows(toscayaml):
   for key in rete:
     linda_out(key, rete[key])
 
-def library(filename):
+def parse_tosca(filename):
+  toscayaml = None
   if filename is not None:
     tosca = ToscaTemplate(filename)
     if tosca is not None:
       toscayaml = tosca.yamldef
+  return toscayaml
+
+def library(filename):
+  toscayaml = tosca_parser(filename)
+  if toscayaml is not None:
       parse_declarative_workflows(toscayaml)
 
 def model(filename, model_name):
-  if filename is not None:
-    tosca = ToscaTemplate(filename)
-    if tosca is not None:
-      toscayaml = tosca.yamldef
+  toscayaml = tosca_parser(filename)
+  if toscayaml is not None:
       parse_model(toscayaml, model_name) 
 
 def main(args=None):
