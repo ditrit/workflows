@@ -34,10 +34,9 @@ Consul is used as storage backend (used for facts and RETE rules) and as the Tup
    - Start the manager instance <pre>python /usr/local/bin/manager.py
 3. Use Ditrit:
    - Swagger API documentation (minimalist...) is available from root url (http://localhost:5000)
-   - Parse and upload a ditrit component library (actually just TOSCA root normative types) : <pre>curl -X PUT http://localhost:5000/library -F "file=@normative.yaml"</pre>
-   - Parse and upload an application model : <pre>curl -X PUT "http://localhost:5000/model?name=un_model" -F "file=@test_model.yaml"</pre>
-   - Instanciate a deployment from model  : <pre>curl -X PUT "http://localhost:5000/instance?model=un_model&name=une_instance"</pre>
-   - Launch a workflow : <pre>curl -X PUT "http://localhost:5000/exec?model=un_model&instance=une_instance&workflow=install"</pre>
+   - Upload a CSAR archive and provide a name for the model : <pre>curl -X PUT "http://localhost:5000/csar?model=un_model" -F "file=@appli.zip"
+   - Instanciate a deployment from the model  : <pre>curl -X PUT "http://localhost:5000/instance?model=un_model&name=une_instance"</pre>
+   - Execute a workflow : <pre>curl -X PUT "http://localhost:5000/exec?model=un_model&instance=une_instance&workflow=install"</pre>
    - Watch execution on each workflow worker <pre>tail -f /opt/execs</pre>
 4. Destroy, stop or start workers or consul server members during execution and verify it's still working.
 
