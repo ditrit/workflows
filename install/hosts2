@@ -8,6 +8,14 @@
 10.0.3.14 name=workflow1
 10.0.3.15 name=workflow2
 10.0.3.16 name=workflow3
+10.0.3.17 name=workflow4
+10.0.3.18 name=operation1
+10.0.3.19 name=operation2
+10.0.3.20 name=operation3
+10.0.3.21 name=manager1
+10.0.3.22 name=manager2
+10.0.3.23 name=logs1
+10.0.3.24 name=logs2
 
 [ditrit_srvs:vars]
 gateway=10.0.3.1
@@ -35,14 +43,19 @@ gateway=10.0.3.1
 10.0.3.14
 10.0.3.15
 10.0.3.16
+10.0.3.17
 
 [operations]
-10.0.3.14
-10.0.3.15
-10.0.3.16
+10.0.3.18
+10.0.3.19
+10.0.3.20
 
 [managers]
-10.0.3.14
-10.0.3.15
+10.0.3.21
+10.0.3.22
+
+[logs]
+10.0.3.23
+10.0.3.24
 
 

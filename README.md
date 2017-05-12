@@ -1,6 +1,6 @@
 # workflows
 
-This is a very first implementation for TOSCA 1.1 explicit workflows.
+This is a very first implementation for a TOSCA 1.1 engine built to handle explicit workflows.
 
 The purpose is to implement TOSCA declarative workflows defined at node type and relationship type level as described in the OASIS normative document 
 [TOSCA Simple Profile in YAML Version 1.1](http://docs.oasis-open.org/tosca/TOSCA-Simple-Profile-YAML/v1.1/TOSCA-Simple-Profile-YAML-v1.1.pdf).
@@ -9,6 +9,9 @@ Workflow definition is parsed into a simple rule based RETE like engine.
 Engine uses a set of workers which insert facts into RETE rules and execute operations.
 Workers are sateless and coordination is provided using LINDA coordination language primitives.
 Consul is used as storage backend (used for facts and RETE rules) and as the Tuple-Space used by workers.
+Artifacts for operations are stored into a S3 compatible storage backend.
+
+A REST API is provided (at manager level) to manage TOSCA CSARs, models, instances and execute workflows
 
 ## Resiliency and high availibility
 - No more facts distribution : each worker launch a thread for each fact of the instance whose status is set as ready in the Space. 
@@ -30,9 +33,8 @@ Consul is used as storage backend (used for facts and RETE rules) and as the Tup
    - Go into the *install* directory.
    - Adapt the inventory *hosts* file with adequate ip addresses.
    - Install ditrit as root : <pre>ansible-playbook -i hosts ditrit.yaml</pre>
-   - Go into one of the manager containers : <pre>lxc-attach -n manager1</pre>
-   - Start the manager instance <pre>python /usr/local/bin/manager.py
 3. Use Ditrit:
+   - Go into one of the manager containers : <pre>lxc-attach -n manager1</pre>
    - Swagger API documentation (minimalist...) is available from root url (http://localhost:5000)
    - Upload a CSAR archive and provide a name for the model : <pre>curl -X PUT "http://localhost:5000/csar?model=un_model" -F "file=@appli.zip"
    - Instanciate a deployment from the model  : <pre>curl -X PUT "http://localhost:5000/instance?model=un_model&name=une_instance"</pre>

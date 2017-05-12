@@ -1,0 +1,8 @@
+---
+
+- name: Demarrage du service
+  systemd:
+    name: consul
+    enabled: yes
+    state: restarted
+

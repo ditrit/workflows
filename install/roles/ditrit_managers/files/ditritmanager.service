@@ -4,12 +4,9 @@ Requires=network-online.target
 After=network-online.target
 
 [Service]
-#User=consul
-#Group=consul
-EnvironmentFile=-/etc/sysconfig/consul
 Environment=GOMAXPROCS=2
 Restart=on-failure
-ExecStart=/usr/local/bin/consul agent $OPTIONS -config-dir=/etc/consul.d
+ExecStart=/usr/bin/python /usr/local/bin/manager.py
 ExecReload=/bin/kill -HUP $MAINPID
 KillSignal=SIGINT
 

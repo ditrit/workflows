@@ -17,4 +17,16 @@
     - "../../../manager/"
     - "../../../utils/"
 
+- name: Déploiement du service ditritmanager
+  copy:
+    src: 'ditritmanager.service'
+    dest: /etc/systemd/system/ditritmanager.service
+    owner: root
+    mode: 750
+
+- name: Demarrage du service
+  systemd:
+    name: ditritmanager
+    enabled: yes
+    state: started
 

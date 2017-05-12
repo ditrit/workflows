@@ -41,6 +41,7 @@
     - consul_agent
     - ditrit_common
     - ditrit_workflows
+    - consul_reload
 
 - hosts: operations
   remote_user: root
@@ -49,6 +50,7 @@
     - consul_agent
     - ditrit_common
     - ditrit_operations
+    - consul_reload
 
 - hosts: managers
   remote_user: root
