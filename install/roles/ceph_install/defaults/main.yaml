@@ -1,0 +1,4 @@
+---
+ceph_release: kraken
+distro: el7
+

@@ -1,4 +1,5 @@
 {"watches": [
-  {"type": "keyprefix", "prefix": "exec_oet/", "handler": "python /usr/local/bin/oet.py >> /opt/execs"}
+  {"type": "keyprefix", "prefix": "exec_oet/", "handler": "python /usr/local/bin/oet.py >> /opt/execs"},
+  {"type": "keyprefix", "prefix": "exec_cache_csar/", "handler": "python /usr/local/bin/cache_csar.py >> /opt/execs"}
  ]
 }

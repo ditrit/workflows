@@ -1,0 +1,5 @@
+127.0.0.1 localhost 
+{% for host in groups['ditrit_srvs'] %}
+{{ host }}   {{ hostvars[host]['name'] }} {{ hostvars[host]['name'] }}.ditrit.io
+{% endfor %}
+

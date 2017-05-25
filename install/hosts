@@ -1,46 +1,42 @@
 [host]
-10.0.3.1
+192.168.122.10
 
 [ditrit_srvs]
-10.0.3.11 name=dspace1
-10.0.3.12 name=dspace2
-10.0.3.13 name=dspace3
-10.0.3.14 name=workflow1
-10.0.3.15 name=workflow2
-10.0.3.16 name=workflow3
-10.0.3.17 name=manager1
+192.168.122.11 name=dspace1
+192.168.122.12 name=dspace2
+192.168.122.13 name=dspace3
+192.168.122.14 name=workflow1
+192.168.122.15 name=workflow2
+192.168.122.16 name=workflow3
+192.168.122.17 name=manager1
 
 [ditrit_srvs:vars]
-gateway=10.0.3.1
+gateway=192.168.122.1
 
 [consul_cluster]
-10.0.3.11 
-10.0.3.12
-10.0.3.13
+192.168.122.11 
+192.168.122.12
+192.168.122.13
 
-[leofs_manager]
-10.0.3.11 manager_role=m
-10.0.3.12 manager_role=s
+[ceph_cluster]
+dspace1
+dspace2
+dspace3
 
-[leofs_gateway]
-10.0.3.17 instance=0
-
-[leofs_storage]
-10.0.3.11 instance=0
-10.0.3.12 instance=1
-10.0.3.13 instance=2
+[ceph_admin]
+manager1
 
 [workflows]
-10.0.3.14
-10.0.3.15
-10.0.3.16
+192.168.122.14
+192.168.122.15
+192.168.122.16
 
 [operations]
-10.0.3.14
-10.0.3.15
-10.0.3.16
+192.168.122.14
+192.168.122.15
+192.168.122.16
 
 [managers]
-10.0.3.17
+192.168.122.17
 
 

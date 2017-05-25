@@ -12,7 +12,7 @@ from run import prepare_instance, execute_workflow
 import os
 import zipfile
 
-def upload_s3(bucket, csarfile, content_type, model_name):
+def upload_s3(bucket, csarfile, content_type, filename):
     """Uploads a given StringIO object to S3. Closes the file after upload.
     Returns the URL for the object uploaded.
     bucket -- The bucket where file needs to be uploaded.
@@ -20,11 +20,22 @@ def upload_s3(bucket, csarfile, content_type, model_name):
     content_type -- content type that needs to be set for the S3 object.
     """
     # upload the file after getting the right bucket
+    print ">>>>>>>>>>>>>>>> csarfile = {}".format(csarfile)
+    nbbytes_file = os.path.getsize(csarfile)
+    print "nbbytes_file = {}".format(nbbytes_file)
     obj = S3Key(bucket)
-    obj.name = model_name
+    obj.name = filename
     obj.content_type = content_type
-    obj.set_contents_from_filename(csarfile)
-    obj.set_acl('public-read')
+    nbbytes_s3 = obj.set_contents_from_filename(csarfile)
+    print "nbbytes_s3 = {}".format(nbbytes_s3)
+    obj.set_acl('public-read-write')
+
+    for key in bucket.list():
+       print "{name}\t{size}".format(name = key.name, size = key.size)
+
+    res = obj.get_contents_to_filename("/tmp/test.zip")
+    print "res = {}".format(res)
+
 
     return obj.generate_url(expires_in=0, query_auth=False)
 
@@ -86,10 +97,11 @@ def parse_csar(csarfile, model_name = None):
     if s3_host is not None:
       conn = S3Connection(s3_key, s3_secret, host=s3_host, port=8080, calling_format=OrdinaryCallingFormat(), is_secure=False)
       model_bucket = conn.create_bucket(model_name)
-      upload_s3(model_bucket, csarfile, 'application/zip', model_name)
+      url_s3_csar = upload_s3(model_bucket, csarfile, 'application/zip', '{}.csar.zip'.format(model_name))
+      print "url_s3_csar =  {}'".format(url_s3_csar)
 
     # Event to update cache for csars
-    linda_out('exec_cache_csar/{}'.format(model_name), time.time())
+    linda_out('exec_cache_csar/{}'.format(model_name), url_s3_csar)
  
    
   

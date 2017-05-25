@@ -6,6 +6,7 @@
     dest: /usr/local/bin/
   with_items:
     - "../../../workers/oet.py"
+    - "../../../workers/cache_csar.py"
     - "../../../utils/linda.py"
 
 - name: Installation config watches consul pour les workers operations

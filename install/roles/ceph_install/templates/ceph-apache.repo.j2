@@ -1,0 +1,16 @@
+[apache2-ceph-noarch]
+name=Apache noarch packages for Ceph
+baseurl=http://gitbuilder.ceph.com/apache2-rpm-{{distro}}-x86_64-basic/ref/master
+enabled=1
+priority=2
+gpgcheck=1
+gpgkey=https://download.ceph.com/keys/autobuild.asc
+
+[apache2-ceph-source]
+name=Apache source packages for Ceph
+baseurl=http://gitbuilder.ceph.com/apache2-rpm-{{distro}}-x86_64-basic/ref/master
+enabled=0
+priority=2
+gpgcheck=1
+gpgkey=https://download.ceph.com/keys/autobuild.asc
+

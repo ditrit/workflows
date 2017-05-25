@@ -1,0 +1,23 @@
+[fastcgi-ceph-basearch]
+name=FastCGI basearch packages for Ceph
+baseurl=http://gitbuilder.ceph.com/mod_fastcgi-rpm-{{distro}}-x86_64-basic/ref/master
+enabled=1
+priority=2
+gpgcheck=1
+gpgkey=https://download.ceph.com/keys/autobuild.asc
+
+[fastcgi-ceph-noarch]
+name=FastCGI noarch packages for Ceph
+baseurl=http://gitbuilder.ceph.com/mod_fastcgi-rpm-{{distro}}-x86_64-basic/ref/master
+enabled=1
+priority=2
+gpgcheck=1
+gpgkey=https://download.ceph.com/keys/autobuild.asc
+
+[fastcgi-ceph-source]
+name=FastCGI source packages for Ceph
+baseurl=http://gitbuilder.ceph.com/mod_fastcgi-rpm-{{distro}}-x86_64-basic/ref/master
+enabled=0
+priority=2
+gpgcheck=1
+gpgkey=https://download.ceph.com/keys/autobuild.asc

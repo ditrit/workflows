@@ -1,0 +1,46 @@
+---
+
+- name: Installation epel
+  yum:
+    name: epel-release
+    state: present
+
+- name: Installation yum-plugin-priorities
+  yum:
+    name: yum-plugin-priorities
+    state: present
+
+- name: Define priorities
+  lineinfile:
+    dest: /etc/yum/pluginconf.d/priorities.conf
+    regexp: '^enable'
+    line: 'enable = 1'
+
+- name: Configuration du repo ceph
+  template:
+    src: "{{ item }}.j2"
+    dest: "/etc/yum.repos.d/{{ item }}"
+  with_items:
+    - ceph.repo
+
+- name: Installation de ceph-deploy 
+  yum:
+    name: "{{ item }}"
+    state: present
+  with_items: 
+    - snappy 
+    - leveldb 
+    - gdisk
+    - python-argparse 
+    - gperftools-libs
+    - ceph
+    - ntp 
+    - ntpdate 
+    - ntp-doc
+
+- name: Creation des repertoires de stockage des osds (devrait etre des partitions)
+  file:
+    path: /var/local/osd
+    state: directory
+    mode: 0777
+

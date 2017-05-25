@@ -1,0 +1,12 @@
+#!/bin/bash
+
+cd /opt/ceph-cluster
+ceph-deploy new {{ groups['ceph_cluster']|join(' ') }}
+ceph-deploy install {{ groups['ceph_admin']|join(' ') }} {{ groups['ceph_cluster']|join(' ') }}
+ceph-deploy mon create-initial
+ceph-deploy osd prepare {{ groups['ceph_cluster']|join(':/var/local/osd ') }}
+ceph-deploy osd activate {{ groups['ceph_cluster']|join(':/var/local/osd ') }}
+ceph-deploy admin {{ groups['ceph_admin']|join(' ') }} {{ groups['ceph_cluster']|join(' ') }}
+ceph-deploy rgw create {{ groups['ceph_cluster']|join(' ') }}
+ceph health
+
