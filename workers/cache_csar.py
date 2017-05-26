@@ -16,82 +16,6 @@ import time
 import threading
 import random
 
-def download_s3(bucket, csarfile, content_type, model_name):
-    """Uploads a given StringIO object to S3. Closes the file after upload.
-    Returns the URL for the object uploaded.
-    bucket -- The bucket where file needs to be uploaded.
-    stringio -- StringIO object which needs to be uploaded.
-    content_type -- content type that needs to be set for the S3 object.
-    """
-    # upload the file after getting the right bucket
-    obj = S3Key(bucket)
-    obj.name = model_name
-    obj.content_type = content_type
-    obj.set_contents_from_filename(csarfile)
-    obj.set_acl('public-read')
-
-    return obj.generate_url(expires_in=0, query_auth=False)
-
-def parse_csar(csarfile, model_name = None):
-
-  # unzip csarfile
-  zip_ref = zipfile.ZipFile(csarfile, 'r')
-  csardir="/tmp/{}".format(time.time())
-  zip_ref.extractall(csardir)
-  zip_ref.close()
-  dircontent = os.listdir(csardir)
-  if len(dircontent) == 1:
-    csardir = '{}/{}'.format(csardir, dircontent[0])
-
-  s3_host = None
-  s3_service = linda_rd('S3', categ='catalog/service')
-  if isinstance(s3_service, list) and len(s3_service) > 0:
-    s3_host   = s3_service[0]['Address']
-    s3_key    = linda_rd('s3/admin/access-key-id')
-    s3_secret = linda_rd('s3/admin/secret-access-key')
- 
-    # init s3 with a bucket for the model
-    if s3_host is not None:
-      conn = S3Connection(s3_key, s3_secret, host=s3_host, port=8080, calling_format=OrdinaryCallingFormat(), is_secure=False)
-      model_bucket = conn.create_bucket(model_name)
-      upload_s3(model_bucket, csarfile, 'application/zip', model_name)
-
-    # Event to update cache for csars
-    linda_out('exec_cache_csar/{}'.format(model_name), time.time())
- 
-
-def get_fact(fact_id):
-  """
-    read a fact from the Space
-  """
-  f = linda_rd("Fact/{}".format(fact_id))
-  if f:
-    return eval(f)
-  else:
-    return None
-
-def set_fact(fact_id, fact_def):
-  """
-    write a fact into the Space
-  """
-  f = linda_out("Fact/{}".format(fact_id), fact_def)
-
-def get_operation_state(operation_name, fact_id):
-  """
-    read a fact from the Space 
-  """
-  f = linda_rd("operation/{}/{}".format(operation_name, fact_id)) 
-  if f:
-    return eval(f)
-  else:
-    return None 
-          
-def set_operation_state(operation_name, fact_id, value):
-  """
-    execute an operation
-  """
-  f = linda_out("operation/{}/{}".format(operation_name, fact_id), value) 
-
 def cache_update(model_name, s3_path):
   print "cache update for model {} and path {}".format(model_name, s3_path)
   # Get idata for s3 connection 
@@ -99,13 +23,14 @@ def cache_update(model_name, s3_path):
   s3_service = linda_rd('S3', categ='catalog/service')
   if isinstance(s3_service, list) and len(s3_service) > 0:
     s3_host   = s3_service[0]['Address']
+    s3_port   = s3_service[0]['ServicePort']
     s3_key    = linda_rd('s3/admin/access-key-id')
     s3_secret = linda_rd('s3/admin/secret-access-key')
 
     # Get CSAR file for the model
     if s3_host is not None:
       print "s3_hot ok"
-      conn = S3Connection(s3_key, s3_secret, host=s3_host, port=8080, calling_format=OrdinaryCallingFormat(), is_secure=False)
+      conn = S3Connection(s3_key, s3_secret, host=s3_host, port=s3_port, calling_format=OrdinaryCallingFormat(), is_secure=False)
       if conn is not None:
         print "conn OK"
         model_bucket = conn.get_bucket(model_name)
@@ -117,8 +42,13 @@ def cache_update(model_name, s3_path):
           csar_key = model_bucket.get_key(s3key_name)
           print "csar_key_name = {}".format(s3key_name)
           if csar_key is not None:
-            res = csar_key.get_contents_to_filename('/tmp/{}'.format(s3key_name))
+            csar_zip_path = '/tmp/{}'.format(s3key_name)
+            res = csar_key.get_contents_to_filename(csar_zip_path)
             print "res = {}".format(res)
+            zip_ref = zipfile.ZipFile(csar_zip_path, 'r')
+            csardir="/var/local/{}".format(model_name)
+            zip_ref.extractall(csardir)
+
           else:
             print "Key {} does not exist in the bucket {}".format(model_name, s3_keyname)
         else:

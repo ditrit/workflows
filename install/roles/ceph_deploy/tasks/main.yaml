@@ -21,13 +21,3 @@
   args:
     executable: /bin/bash
 
-- name: Create admin S3
-  shell: ssh {{ groups['ceph_cluster'][0] }} radosgw-admin user create --uid=admins3 --display-name="Admin S3"
-  register: s3_admin
-
-- name: Store s3 admin access key into consul
-  shell: consul kv put s3/admin/access-key-id {{ s3_admin.keys[0].access_key }}
-
-- name: Store s3 admin secret key into consul
-  shell: consul kv put s3/admin/secret-access-key {{ s3_admin.keys[0].secret_key }}
-

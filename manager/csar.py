@@ -90,12 +90,13 @@ def parse_csar(csarfile, model_name = None):
   s3_service = linda_rd('S3', categ='catalog/service')
   if isinstance(s3_service, list) and len(s3_service) > 0:
     s3_host   = s3_service[0]['Address']
+    s3_port   = s3_service[0]['ServicePort']
     s3_key    = linda_rd('s3/admin/access-key-id')
     s3_secret = linda_rd('s3/admin/secret-access-key')
  
     # init s3 with a bucket for the model
     if s3_host is not None:
-      conn = S3Connection(s3_key, s3_secret, host=s3_host, port=8080, calling_format=OrdinaryCallingFormat(), is_secure=False)
+      conn = S3Connection(s3_key, s3_secret, host=s3_host, port=s3_port, calling_format=OrdinaryCallingFormat(), is_secure=False)
       model_bucket = conn.create_bucket(model_name)
       url_s3_csar = upload_s3(model_bucket, csarfile, 'application/zip', '{}.csar.zip'.format(model_name))
       print "url_s3_csar =  {}'".format(url_s3_csar)

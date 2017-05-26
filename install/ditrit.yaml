@@ -11,6 +11,12 @@
     - consul_install
     - consul_server
 
+- hosts: consul_agent
+  remote_user: root
+  roles:
+    - consul_install
+    - consul_agent
+
 - hosts: ceph_cluster
   remote_user: root
   roles:
@@ -22,11 +28,14 @@
     - ceph_install
     - ceph_deploy
 
+- hosts: ceph_cluster
+  remote_user: root
+  roles:
+    - ceph_gateway
+
 - hosts: workflows
   remote_user: root
   roles:
-    - consul_install
-    - consul_agent
     - ditrit_common
     - ditrit_workflows
     - consul_reload
@@ -34,8 +43,6 @@
 - hosts: operations
   remote_user: root
   roles:
-    - consul_install
-    - consul_agent
     - ditrit_common
     - ditrit_operations
     - consul_reload
@@ -43,8 +50,6 @@
 - hosts: managers
   remote_user: root
   roles:
-    - consul_install
-    - consul_agent
     - ditrit_common
     - ditrit_managers
 
