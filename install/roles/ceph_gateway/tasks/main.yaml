@@ -1,0 +1,25 @@
+---
+
+- name: Create admin S3
+  shell: radosgw-admin user create --uid=admins3 --display-name="Admin S3"
+  register: create_s3_admin
+  run_once: true
+
+- name: Get S3 admin  user info
+  set_fact:
+    s3_admin_info: "{{ create_s3_admin.stdout | from_json() }}" 
+
+- name: Store s3 admin access key into consul
+  shell: consul kv put s3/admin/access-key-id {{ s3_admin_info['keys'][0]['access_key'] }}
+  run_once: true
+
+- name: Store s3 admin secret key into consul
+  shell: consul kv put s3/admin/secret-access-key {{ s3_admin_info['keys'][0]['secret_key'] }}
+  run_once: true
+
+- name: Register s3 service
+  uri:
+    url: http://localhost:8500/v1/agent/service/register
+    method: PUT
+    body: '{"Name": "s3", "Port": 7480 }'
+
