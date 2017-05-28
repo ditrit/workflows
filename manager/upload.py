@@ -4,6 +4,8 @@ import os
 import sys
 import copy
 from tosca_template import ToscaTemplate
+from tosca_basetypes import *
+from tosca_constraints import *
 from linda import *
 
 def is_capability_of_type(capability_type, capability_name, capability_def, node_type):
@@ -171,6 +173,117 @@ def parse_model(toscayaml, model_name):
   for node_key, node_def in model.items():
     node_def['scalability_path'] = get_scalability_path(node_key, model)
     linda_out("Model/{}".format(node_key), node_def)
+
+def get_types(nt_def, typename):
+  if typename.split('.')[-1] == 'Root':
+    return [ typename ] 
+  else:
+    typedef = nt_def[typename]
+    parent_type = typedef.get('derived_from')
+    if isinstance(parent_type, basestring):
+      return get_types(parent_type).append(typename) 
+    else:
+      print "Syntax error"
+      return []
+
+def get_properties_definition(properties_def):
+  properties = {}
+  if isinstance(properties_def, dict):
+    for prop_name, prop_def in properties_def.items()
+      prop_val['name'] = prop_name
+
+      # Property can have a description
+      prop_val['description'] = prop_def.get('description')
+      if prop_val['description'] is None:
+        prop_val['description'] = '' 
+      if not isinstance(prop_val['description'], basestring):
+        print "Error: description for property '{}' is not a string".format(prop_name)
+
+      # Default status is 'supported'
+      status = prop_def.get('status')
+      if status is None:
+        status = 'supported'
+      if status in [ 'supported', 'unsupported', 'experimental', 'deprecated' ]:
+        prop_val['status'] = status
+      else:
+        print "Error: bad value '{}' for the status of the property '{}'".format(prop_val['status'], prop_name)
+        prop_val['status'] = None
+
+      # Property is required by default
+      if prop_def.get('required') in [ 'false', False ]:
+        prop_val['required'] = False
+      else:
+        prop_val['required'] = True
+      
+      # Property type is required
+      prop_val['type'] = prop_def.get('type')
+      if prop_val['type'] is None:
+        print "Error: property '{}' doesi have a type".format(prop_name)
+      if not isinstance(prop_val['type'], basestring):
+        print "Error: type for property '{}' is not correct".format(prop_name)
+
+      # Constraints to be applied on the property
+      constraints = get_constraints(prop_def.get('constraints'), prop_val['type'])
+      prop_val['constraints'] = constraints
+
+      # Property default value 
+      default = get_value(prop_def.get('default'), prop_val['type'])
+      prop_val['default'] = default 
+      if constraints(default) == False:
+        print "Error : default value '{}' breaks the conxtraints '{}'".format(default, prop_def.get('constraint'))
+
+      # Entry schema
+
+      # build value for properties
+      ret[prop_name] = (prop_val)
+
+  return properties
+
+      
+      
+       
+
+      
+
+def parse_types(toscayaml, model_name):
+  """
+      Create types internal representation
+  """
+  node_types = {}
+  # Part of the workflows defined in nodes have to be parsed before the part defined in relations. 
+  nt_def = toscayaml.get('node_types')
+  if type(nt_def) is dict:
+  for typename, typedef in nt_def.items():
+    val = {}
+    if typename in node_types:
+      val = types[typename]
+    val['type'] = typename
+    val['types'] = get_types(nt_def, typename)
+    val['type_for_workflow'] = 'tosca.nodes.Root'
+    for parent in val['types']:
+      type_for_workflow =  nt_def[parent].get(workflows)
+      if type_for_workflow is not None:
+        val['type_for_workflow'] = type_for_workflow
+        break
+    val['isCompute'] = 'tosca.nodes.Compute' in val['types']
+    val['version'] = typedef.get('version')
+    val['metadata'] = {}
+    metadata = typedef.get('metadata')
+    if isinstance(metadata, dict) and all(map(lambda x: isinstance(x, basestring), metadata.values())):
+      val['metadata'] = metadata
+    val['description'] = ""
+    descr = typedef.get('description')
+    if descr is not None:
+      val['description'] = descr
+
+   val['properties'] = get_properties_definitions(typedef.get('properties'))
+ 
+    node_types[nodename] = val
+    
+
+  for typename, typeval in node_types:
+    linda_out('types/nodes/{}'.format(typename), val)
+
 
 def parse_declarative_workflows(toscayaml):
   """
