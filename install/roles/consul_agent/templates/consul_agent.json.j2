@@ -1,5 +1,5 @@
 {
-"bind_addr": "{{ inventory_hostname }}",
+"bind_addr": "{{ hostvars[ansible_hostname]['ip'] }}",
 "server": false,
 "datacenter": "dc1",
 "data_dir": "/var/consul",
@@ -12,7 +12,8 @@
 "skip_leave_on_interrupt": true,
 "start_join": [ 
 {% for host in groups['consul_cluster'] %}
- "{{ host }}"{% if not loop.last %},{% endif %}
+ "{{ hostvars[host]['ip'] }}"{% if not loop.last %},{% endif %}
 {% endfor %}
   ]
  }
+

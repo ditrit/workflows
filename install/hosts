@@ -2,27 +2,27 @@
 192.168.122.10
 
 [ditrit_srvs]
-192.168.122.11 name=dspace1
-192.168.122.12 name=dspace2
-192.168.122.13 name=dspace3
-192.168.122.14 name=workflow1
-192.168.122.15 name=workflow2
-192.168.122.16 name=workflow3
-192.168.122.17 name=manager1
+dspace1   ip=192.168.122.11
+dspace2   ip=192.168.122.12
+dspace3   ip=192.168.122.13
+workflow1 ip=192.168.122.14
+workflow2 ip=192.168.122.15
+workflow3 ip=192.168.122.16
+manager1  ip=192.168.122.17
 
 [ditrit_srvs:vars]
 gateway=192.168.122.1
 
 [consul_cluster]
-192.168.122.11 
-192.168.122.12
-192.168.122.13
+dspace1
+dspace2
+dspace3
 
 [consul_agent]
-192.168.122.14 
-192.168.122.15
-192.168.122.16
-192.168.122.17
+workflow1
+workflow2
+workflow3
+manager1
 
 [ceph_cluster]
 dspace1
@@ -33,16 +33,16 @@ dspace3
 manager1
 
 [workflows]
-192.168.122.14
-192.168.122.15
-192.168.122.16
+workflow1
+workflow2
+workflow3
 
 [operations]
-192.168.122.14
-192.168.122.15
-192.168.122.16
+workflow1
+workflow2
+workflow3
 
 [managers]
-192.168.122.17
+manager1
 
 

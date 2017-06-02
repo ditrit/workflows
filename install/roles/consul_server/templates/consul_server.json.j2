@@ -1,5 +1,5 @@
 {
-"bind_addr": "{{ inventory_hostname }}", 
+"bind_addr": "{{ hostvars[ansible_hostname]['ip'] }}", 
 "datacenter": "dc1",
 "data_dir": "/var/consul",
 "encrypt": "EXz7LFN8hpQ4id8EDYiFoQ==",
@@ -14,7 +14,7 @@
 "rejoin_after_leave": true,
 "retry_join": [ 
 {% for host in ansible_play_hosts %}
- "{{ host }}:8301"{% if not loop.last %},{% endif %}
+ "{{ hostvars[host]['ip'] }}:8301"{% if not loop.last %},{% endif %}
 {% endfor %}
   ]
  }

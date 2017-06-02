@@ -1,19 +1,19 @@
 ---
 - name: Container creation
   lxc_container:
-    name: "{{ hostvars[item]['name'] }}"
+    name: "{{ item }}"
     template: 'centos'
     state: 'stopped'
     template_options: --release 7
     container_config: 
-      - "lxc.network.ipv4={{ item }}"
+      - "lxc.network.ipv4={{ hostvars[item]['ip'] }}"
       - "lxc.network.ipv4.gateway={{ hostvars[item]['gateway'] }}"
   with_items: 
     - "{{ groups['ditrit_srvs'] }}"
 
-- name: Correct include in lxc config for centos 7
+- name: Include of the correct common config file in lxc for centos 7
   lineinfile:
-    dest: /var/lib/lxc/{{ hostvars[item]['name'] }}/config
+    dest: /var/lib/lxc/{{ item }}/config
     regexp: '^lxc.include'
     line: 'lxc.include = /usr/share/lxc/config/fedora.common.conf'
   with_items:
@@ -21,7 +21,7 @@
 
 - name: no boot protocol to be used (ip is fixed)
   lineinfile:
-    dest: /var/lib/lxc/{{ hostvars[item]['name'] }}/rootfs/etc/sysconfig/network-scripts/ifcfg-eth0
+    dest: /var/lib/lxc/{{ item }}/rootfs/etc/sysconfig/network-scripts/ifcfg-eth0
     regexp: '^BOOTPROTO'
     line: BOOTPROTO=none
   with_items:
@@ -30,28 +30,28 @@
 - name: update host /etc/hosts with new container
   lineinfile:
     dest: /etc/hosts
-    regexp: '^{{  item }}'
-    line: "{{ item }}   {{hostvars[item]['name']}}"
+    regexp: "^{{  hostvars[item]['ip'] }}"
+    line: "{{ hostvars[item]['ip'] }}   {{ item }}"
   with_items:
     - "{{ groups['ditrit_srvs'] }}"
 
 - name: update containers /etc/hosts with new container
   template:
     src: hosts.j2
-    dest: /var/lib/lxc/{{hostvars[item]['name'] }}/rootfs/etc/hosts
+    dest: /var/lib/lxc/{{ item }}/rootfs/etc/hosts
   with_items:
     - "{{ groups['ditrit_srvs'] }}"
 
 - name: resolv.conf
   file:
-    dest: /var/lib/lxc/{{ hostvars[item]['name'] }}/rootfs/etc/resolv.conf
+    dest: /var/lib/lxc/{{ item }}/rootfs/etc/resolv.conf
     state: absent
   with_items:
     - "{{ groups['ditrit_srvs'] }}"
 
 - name: resolv.conf
   lineinfile:
-    dest: /var/lib/lxc/{{ hostvars[item]['name'] }}/rootfs/etc/resolv.conf
+    dest: /var/lib/lxc/{{ item }}/rootfs/etc/resolv.conf
     create: yes
     line: "search lxc\nnameserver {{ hostvars[item]['gateway'] }}"
   with_items:
@@ -59,7 +59,7 @@
 
 - name: Allow root login for ssh 
   lineinfile:
-    dest: /var/lib/lxc/{{ hostvars[item]['name'] }}/rootfs/etc/ssh/sshd_config
+    dest: /var/lib/lxc/{{ item }}/rootfs/etc/ssh/sshd_config
     regexp: '^#PermitRootLogin'
     line: 'PermitRootLogin yes'
   with_items:
@@ -67,7 +67,7 @@
 
 - name: No strict hostkey checking for ssh connections
   lineinfile:
-    dest: /var/lib/lxc/{{ hostvars[item]['name'] }}/rootfs/etc/ssh/ssh_config
+    dest: /var/lib/lxc/{{ item}}/rootfs/etc/ssh/ssh_config
     regexp: 'StrictHostKeyChecking'
     line: '    StrictHostKeyChecking no'
   with_items:
@@ -75,7 +75,7 @@
 
 - name: Create .ssh directory for containers
   file:
-    path: /var/lib/lxc/{{ hostvars[item]['name'] }}/rootfs/root/.ssh
+    path: /var/lib/lxc/{{ item }}/rootfs/root/.ssh
     state: directory
     mode: 0700
   with_items:
@@ -84,7 +84,7 @@
 - name: .ssh private key for containers
   copy:
     src: /root/.ssh/id_rsa
-    dest: /var/lib/lxc/{{ hostvars[item]['name'] }}/rootfs/root/.ssh/id_rsa
+    dest: /var/lib/lxc/{{ item }}/rootfs/root/.ssh/id_rsa
     mode: 0600
   with_items:
     - "{{ groups['ditrit_srvs'] }}"
@@ -92,14 +92,14 @@
 - name: .ssh public key for containers
   copy:
     src: /root/.ssh/id_rsa.pub
-    dest: /var/lib/lxc/{{ hostvars[item]['name'] }}/rootfs/root/.ssh/id_rsa.pub
+    dest: /var/lib/lxc/{{ item }}/rootfs/root/.ssh/id_rsa.pub
     mode: 0644
   with_items:
     - "{{ groups['ditrit_srvs'] }}"
 
 - name: creation of  the authorized_keys file
   file:
-    path: /var/lib/lxc/{{ hostvars[item]['name'] }}/rootfs/root/.ssh/authorized_keys
+    path: /var/lib/lxc/{{ item }}/rootfs/root/.ssh/authorized_keys
     state: touch 
     mode: 0644
   with_items:
@@ -109,21 +109,21 @@
   authorized_key:
     user: root
     key: "{{ lookup('file', '/root/.ssh/id_rsa.pub') }}"
-    path: /var/lib/lxc/{{ hostvars[item]['name'] }}/rootfs/root/.ssh/authorized_keys
+    path: /var/lib/lxc/{{ item }}/rootfs/root/.ssh/authorized_keys
     state: present
   with_items:
     - "{{ groups['ditrit_srvs'] }}"
     
 - name: Demarrage des conteneurs
   lxc_container:
-    name: "{{ hostvars[item]['name'] }}"
+    name: "{{ item }}"
     state: 'started'
   with_items: 
     - "{{ groups['ditrit_srvs'] }}"
 
 - name: initialisation mot de passe root
   lxc_container:
-    name: "{{ hostvars[item]['name'] }}"
+    name: "{{ item }}"
     container_command: |
       chpasswd <<< "root:@ditrit@"
   with_items:
@@ -131,7 +131,7 @@
 
 - name: Wait network
   wait_for:
-    host: "{{ item }}"
+    host: "{{ hostvars[item]['ip'] }}"
     port: 22
   with_items:
     - "{{ groups['ditrit_srvs'] }}"
