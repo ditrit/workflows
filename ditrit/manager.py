@@ -6,10 +6,10 @@ from werkzeug.datastructures import FileStorage
 
 from cStringIO import StringIO
 
-from linda import *
-from upload import library, model
-from run import prepare_instance, execute_workflow
-from csar import parse_csar
+from utils.linda import *
+from manager.upload import library, model
+from manager.run import prepare_instance, execute_workflow
+from manager.csar import parse_csar
 import os
 
 app = Flask(__name__)

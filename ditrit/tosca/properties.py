@@ -1,6 +1,6 @@
 
-from tosca_basetypes   import *
-from tosca_constraints import *
+from tosca.basetypes   import *
+from tosca.constraints import *
 
 
 def get_base_keynames(yaml_def, val, name):

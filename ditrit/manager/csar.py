@@ -6,9 +6,9 @@ from boto.s3.connection import S3Connection
 from boto.s3.connection import OrdinaryCallingFormat
 from boto.s3.key import Key as S3Key
 
-from linda import *
-from upload import parse_tosca, parse_declarative_workflows, parse_model
-from run import prepare_instance, execute_workflow
+from utils.linda import *
+from manager.upload import parse_tosca, parse_declarative_workflows, parse_model
+from manager.run import prepare_instance, execute_workflow
 import os
 import zipfile
 

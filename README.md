@@ -14,7 +14,6 @@ Artifacts for operations are stored into a S3 compatible storage backend.
 A REST API is provided (at manager level) to manage TOSCA CSARs, models, instances and execute workflows
 
 ## Resiliency and high availibility
-- No more facts distribution : each worker launch a thread for each fact of the instance whose status is set as ready in the Space. 
 - Linda coordination provides distribution of operations whatever the number of workers.
 - Consul provides high availibility, resiliency and coherency at Space level. 
 
@@ -35,11 +34,11 @@ A REST API is provided (at manager level) to manage TOSCA CSARs, models, instanc
    - Install ditrit as root : <pre>ansible-playbook -i hosts ditrit.yaml</pre>
 3. Use Ditrit:
    - Go into one of the manager containers : <pre>lxc-attach -n manager1</pre>
-   - Swagger API documentation (minimalist...) is available from root url (http://localhost:5000)
    - Upload a CSAR archive and provide a name for the model : <pre>curl -X PUT "http://localhost:5000/csar?model=un_model" -F "file=@appli.zip"
    - Instanciate a deployment from the model  : <pre>curl -X PUT "http://localhost:5000/instance?model=un_model&name=une_instance"</pre>
    - Execute a workflow : <pre>curl -X PUT "http://localhost:5000/exec?model=un_model&instance=une_instance&workflow=install"</pre>
    - Watch execution on each workflow worker <pre>tail -f /opt/execs</pre>
+   - Swagger API documentation (minimalist...) is available from root url (http://localhost:5000)
 4. Destroy, stop or start workers or consul server members during execution and verify it's still working.
 
 

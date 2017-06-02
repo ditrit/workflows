@@ -2,7 +2,7 @@
 
 import os
 import sys
-import yamlparser
+from tosca import yamlparser
 
 ALLOWEDTOSCAVERSIONS = [ 'tosca_simple_yaml_1_0' ]
 

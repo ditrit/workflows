@@ -1,4 +1,0 @@
-{"watches": [
-  {"type": "keyprefix", "prefix": "exec_wdt/", "handler": "python /usr/local/bin/wdt.py >> /opt/execs"},
-  {"type": "keyprefix", "prefix": "exec_oet/", "handler": "python /usr/local/bin/oet.py >> /opt/execs"}
-]}

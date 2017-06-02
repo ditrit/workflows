@@ -14,8 +14,11 @@
     src: "{{ item }}"
     dest: /usr/local/bin/
   with_items:
-    - "../../../manager/"
-    - "../../../utils/"
+    - "../../../ditrit/manager.py"
+    - "../../../ditrit/manager"
+    - "../../../ditrit/utils"
+    - "../../../ditrit/tosca"
+    - "../../../ditrit/example"
 
 - name: Déploiement du service ditritmanager
   copy:

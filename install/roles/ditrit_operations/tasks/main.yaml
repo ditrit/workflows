@@ -5,14 +5,14 @@
     src: "{{ item }}"
     dest: /usr/local/bin/
   with_items:
-    - "../../../workers/oet.py"
-    - "../../../workers/cache_csar.py"
-    - "../../../utils/linda.py"
+    - "../../../ditrit/exec_operation.py"
+    - "../../../ditrit/cache_csar.py"
+    - "../../../ditrit/utils"
 
 - name: Installation config watches consul pour les workers operations
   copy: 
     src: "{{ item }}"
     dest: /etc/consul.d/
   with_items:
-    - "../../../workers/oet.json"
+    - "../../../ditrit/consul_watches/watch_operation.json"
 

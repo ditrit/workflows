@@ -5,7 +5,7 @@ import sys
 import json
 import base64
 import time
-from linda import *
+from utils.linda import *
 import threading
 import random
 

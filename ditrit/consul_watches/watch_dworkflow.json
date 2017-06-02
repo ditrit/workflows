@@ -1,0 +1,4 @@
+{"watches": [
+  {"type": "keyprefix", "prefix": "exec_wdt/", "handler": "python /usr/local/bin/exec_dworkflow.py >> /opt/execs"}
+ ]
+}

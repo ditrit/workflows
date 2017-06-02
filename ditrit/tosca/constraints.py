@@ -1,5 +1,5 @@
 
-import tosca_basetypes
+import tosca.basetypes
 
 def f_eq(v, _): 
   return lambda x : x == v

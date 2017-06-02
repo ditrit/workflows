@@ -3,8 +3,8 @@
 import os
 import sys
 import copy
-from tosca_template import ToscaTemplate
-from linda import *
+from tosca.template import ToscaTemplate
+from utils.linda import *
 
 
 
