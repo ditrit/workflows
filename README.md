@@ -17,7 +17,7 @@ A REST API is provided (at manager level) to manage TOSCA CSARs, models, instanc
 - Linda coordination provides distribution of operations whatever the number of workers.
 - Consul provides high availibility, resiliency and coherency at Space level. 
 
-## The exemple 
+## The example 
 - Workflows implemented are standard `install and uninstall TOSCA workflow as defined in § "7.4.2 Weaving improvements" of the normative document.
 - The Model used as exemple describe connections between 4 nodes (`A-->B B-->D D-->C and A -->C ), each one node being hosted onto an other node (A is hosted on srvA, B is hosted on srvB, C is hosted on srvC and D is hosted on D). 
 - Default scaling is used on several nodes. 19 real nodes are built when the 'install' workflow is executed for an instance of the model.
