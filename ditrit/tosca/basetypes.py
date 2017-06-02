@@ -87,9 +87,16 @@ class Range(object)
     return minok and maxok
 
   @classmethod
+  def from_minmax(cls, minval, maxval):
+    if isinstance(minval, int) and ((isinstance(maxval, int) and maxval >= minval) or str(maxval) == unbounded):
+      return cls(minval, maxval)
+    else:
+      return None
+     
+  @classmethod
   def from_list(cls, args):
      if isinstance(args, list) and len(args) == 2:
-       return cls(args[0], args[1])
+       return cls.from_minmax(args[0], args[1])
      else:
        print "Error : '{}' is not a valid range".format(args)
        return None
