@@ -10,11 +10,12 @@ def get_interface_definitions(interfaces_def, for_template=False):
   interfaces = {}
   if isinstance(interfaces_def, dict):
 
-    interface_type_name = None
-    inputs = []
-    operations = []
-
     for if_name, if_def in interfaces_def.items()
+
+      interface_type = None
+      inputs = []
+      operations = []
+
       ## TODO : manage namespace to have complete interface name (eg : tosca.interfaces.nodes.lifecycle.Standard)
 
       # in the case of a Template, get the required interface_type_name
@@ -31,8 +32,7 @@ def get_interface_definitions(interfaces_def, for_template=False):
 	inputs = [] # get_properties_assignments(if_def.get('inputs'))
 
       # get definition of operations 
-      operations = get_operation_definitions(if_def.get('operations')) 
-
+      operations = get_operation_definitions(if_def) 
           
       if_val = { 'name': if_name, 'interface_type': interface_type, 'inputs': inputs, 'operations': operations }
 

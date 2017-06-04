@@ -67,7 +67,7 @@ def get_extra_keynames(yaml_def, val, name):
       val['entry_schema']['constraints'] = get_constraints(entry_schema.get('constraints'), entry_schema['type'])
 
 
-def get_attributes_definition(attributes_def):
+def get_attribute_definitions(attributes_def):
   """
       Parse attributes definition
   """
@@ -85,7 +85,7 @@ def get_attributes_definition(attributes_def):
   return attributes
 
 
-def get_properties_definition(properties_def):
+def get_property_definitions(properties_def):
   """
       Parse properties definition
   """
@@ -105,7 +105,7 @@ def get_properties_definition(properties_def):
 
   return properties
 
-def get_parameters_definition(parameters_def):
+def get_parameter_definitions(parameters_def):
   """
       Parse parameters definition
   """
