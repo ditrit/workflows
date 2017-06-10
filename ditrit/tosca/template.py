@@ -41,19 +41,20 @@ class ToscaObject(object):
           if 'f' in defkeys[key]:
             defkeys[key]['f'](self,  value)
           if 'subitems' in defkeys[key]:
-            __valid_keys(self, value, defkeys[key]['subitems']) 
+            self.__valid_keys(value, defkeys[key]['subitems']) 
     return valid, "\n".join(msg)
 
 
 class ToscaTemplate(ToscaObject):
 
   tosca_type = 'ToscaTemplate'
+  tosca_normative_dir= '/usr/local/bin/tosca/normative_types'
 
   grammar =  { 
     'tosca_simple_yaml_1_0': [{ 
       'tosca_definitions_version': 
          { 'required': True, 'kind': basestring },
-      'metadata': 		   
+      'metadata':    
          { 'required': False, 'kind': dict, 
            'subitems': {
               'template_name': 
@@ -62,32 +63,33 @@ class ToscaTemplate(ToscaObject):
                 { 'required': False, 'kind': basestring },
               'template_version':
                 { 'required': False, 'kind': basestring } }},
-      'description': 		   
+      'description':    
          { 'required': False, 'kind': basestring },
-      'dsl_definitions': 	   
+      'dsl_definitions':    
          { 'required': False, 'kind': dict },
-      'imports':		   
+      'imports':   
          { 'required': False, 'kind': dict },   
-      'repositories': 	           
+      'repositories':            
          { 'required': False, 'kind': dict },
-      'artifacts_types': 	   
+      'artifact_types':    
          { 'required': False, 'kind': dict },
-      'data_types': 	           
+      'data_types':           
          { 'required': False, 'kind': dict },
-      'capability_types':	
+      'capability_types':
          { 'required': False, 'kind': dict },
-      'interface_types': 	
+      'interface_types': 
          { 'required': False, 'kind': dict },
       'relationship_types':
          { 'required': False, 'kind': dict },
-      'node_types':  	
+      'node_types':  
          { 'required': False, 'kind': dict },
-      'group_types':  	
+      'group_types':  
          { 'required': False, 'kind': dict },
-      'policy_types':  	
+      'policy_types':  
          { 'required': False, 'kind': dict },
       'topology_template': 
-         { 'required': True, 'kind': dict }}]
+      #  { 'required': True, 'kind': dict }}]
+         { 'required': False, 'kind': dict }}]
 
     }
   
@@ -110,28 +112,31 @@ class ToscaTemplate(ToscaObject):
         if currentval is None:
           yamldef[key] = newval
         else:
-          if isinstance(currentval, dict) and isinstance(newval, dict):
-            lencurrentval = len(currentval)
-            lennewval = len(newval)
-            currentval.update(newval)
-            if len(yamldef[key]) < lencurrentval + lennewval:
-              raise ToscaException("Le fichier '{f}' redefinit une entite '{k}' deja importee.".format(f=filename, k=key))
-          elif isinstance(currentval, list) and isinstance(newval, list):
-            yamldef[key] = currentval + newval
-            if len(yamldef[key]) < len(currentval) + len(newval):
-              raise ToscaException("Le fichier '{f}' redefinit une entite '{k}' deja importee.".format(f=filename, k=key))
-          elif key == 'description':
-            pass
-          elif key == 'tosca_definitions_version':
-            if newval != toscaversion:
-              raise ToscaException("La version TOSCA importee dans le fichier '{f}' est incoherente avec le template parent".format(f=filename))
+          if key != 'metadata':
+            if isinstance(currentval, dict) and isinstance(newval, dict):
+              lencurrentval = len(currentval)
+              lennewval = len(newval)
+              currentval.update(newval)
+              if len(yamldef[key]) < lencurrentval + lennewval:
+                raise ToscaException("Le fichier '{f}' redefinit une entite '{k}' deja importee.".format(f=filename, k=key))
+            elif isinstance(currentval, list) and isinstance(newval, list):
+              yamldef[key] = currentval + newval
+              if len(yamldef[key]) < len(currentval) + len(newval):
+                raise ToscaException("Le fichier '{f}' redefinit une entite '{k}' deja importee.".format(f=filename, k=key))
+            elif key == 'description':
+              pass
+            elif key == 'tosca_definitions_version':
+              if newval != toscaversion:
+                raise ToscaException("La version TOSCA importee dans le fichier '{f}' est incoherente avec le template parent".format(f=filename))
     yamldef['tosca_definitions_version'] = toscaversion
     yamldef['description'] = self.description
     ToscaObject.__init__(self, yamldef, toscaversion)  
     
 
-  def do_imports(self, tpl, reldir):
+  def do_imports(self, tpl, reldir, normative=False):
     imports = tpl['imports'] if 'imports' in tpl else [] 
+    if isinstance(imports, dict):
+      imports = imports.values()
     if isinstance(imports, list):
       for import_def in imports:
         import_file = None
@@ -151,18 +156,22 @@ class ToscaTemplate(ToscaObject):
             if len(import_def) > 1:
               import_file = import_def.get('file') 
         if import_file is not None:
-          reldir = reldir + "/" if len(reldir)> 0 else ""
+          reldir = reldir + "/" if len(reldir)> 0 and reldir[-1] != '/' else reldir 
           import_tpl = yamlparser.load_yaml(reldir + import_file) 
           if isinstance(import_tpl, dict):
-            fimportname = os.path.basename(import_file)
+            fimportname  = os.path.basename(import_file)
+            tplreldir    = os.path.dirname(import_file)
+            toscaversion = import_tpl.get('tosca_definitions_version')
+            
+            if toscaversion is None or toscaversion not in ALLOWEDTOSCAVERSIONS:
+              raise ToscaException("Version TOSCA inconnue ou non definie dans le fichier '{d}{f}'".format(d=reldir,f=import_file))
+            else:
+              if normative == False and not "{}.yaml".format(toscaversion) in self.tpls.keys():
+                self.do_imports({ 'imports': [ "{}.yaml".format(toscaversion) ] }, ToscaTemplate.tosca_normative_dir, normative=True)
             if fimportname in self.tpls.keys():
               raise ToscaException("import multiple du fichier: {f}".format(f=fimportname))
             self.tpls[fimportname] = import_tpl
-            toscaversion = import_tpl.get('tosca_definitions_version')
-            if toscaversion is None or toscaversion not in ALLOWEDTOSCAVERSIONS:
-              raise ToscaException("Version TOSCA inconnue ou non definie dans le fichier '{d}{f}'".format(d=reldir,f=import_file))
-            tplreldir = os.path.dirname(import_file)
-            self.do_imports(import_tpl, reldir + tplreldir)
+            self.do_imports(import_tpl, reldir + tplreldir, normative)
         
 
   @property

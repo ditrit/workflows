@@ -197,12 +197,12 @@ def parse_tosca(filename):
   return toscayaml
 
 def library(filename):
-  toscayaml = tosca_parser(filename)
+  toscayaml = parse_tosca(filename)
   if toscayaml is not None:
       parse_declarative_workflows(toscayaml)
 
 def model(filename, model_name):
-  toscayaml = tosca_parser(filename)
+  toscayaml = parse_tosca(filename)
   if toscayaml is not None:
       parse_model(toscayaml, model_name) 
 

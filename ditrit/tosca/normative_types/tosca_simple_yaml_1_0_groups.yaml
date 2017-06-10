@@ -6,7 +6,7 @@ metadata:
   template_version: 1.0
 
 
-description: TOSCA 1.1 normative types defintion : group types part
+description: TOSCA 1.1 normative types defintion, group types part
 
 group_types:
  

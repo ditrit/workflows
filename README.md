@@ -31,10 +31,10 @@ A REST API is provided (at manager level) to manage TOSCA CSARs, models, instanc
    - Clone the repository : <pre>git clone https://github.com/ditrit/workflows.git</pre>
    - Go into the *install* directory.
    - Adapt the inventory *hosts* file with adequate ip addresses.
-   - Install ditrit as root : <pre>ansible-playbook -i hosts ditrit.yaml</pre>
+   - Install ditrit as root : <pre>utils/ansible-deploy.sh</pre>
 3. Use Ditrit:
    - Go into one of the manager containers : <pre>lxc-attach -n manager1</pre>
-   - Upload a CSAR archive and provide a name for the model : <pre>curl -X PUT "http://localhost:5000/csar?model=un_model" -F "file=@appli.zip"
+   - Upload a CSAR archive and provide a name for the model : <pre>curl -X PUT "http://localhost:5000/csar?model=un_model" -F "file=@example/appli.zip"
    - Instanciate a deployment from the model  : <pre>curl -X PUT "http://localhost:5000/instance?model=un_model&name=une_instance"</pre>
    - Execute a workflow : <pre>curl -X PUT "http://localhost:5000/exec?model=un_model&instance=une_instance&workflow=install"</pre>
    - Watch execution on each workflow worker <pre>tail -f /opt/execs</pre>

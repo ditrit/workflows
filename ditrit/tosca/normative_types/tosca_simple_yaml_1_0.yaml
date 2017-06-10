@@ -1,0 +1,19 @@
+tosca_definitions_version: tosca_simple_yaml_1_0
+
+metadata:
+  template_name:    normative_types
+  template_author:  ditrit
+  template_version: 1.0
+
+
+description: TOSCA 1.1 normative types
+
+imports:
+  artifact_types:     tosca_simple_yaml_1_0_artifacts.yaml
+  data_types:         tosca_simple_yaml_1_0_datatypes.yaml
+  capability_types:   tosca_simple_yaml_1_0_capabilities.yaml
+  interfaces_types:   tosca_simple_yaml_1_0_interfaces.yaml
+  relationship_types: tosca_simple_yaml_1_0_relationships.yaml
+  group_types:        tosca_simple_yaml_1_0_groups.yaml
+  policy_types:       tosca_simple_yaml_1_0_policies.yaml
+
