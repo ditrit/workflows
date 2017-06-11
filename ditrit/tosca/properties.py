@@ -11,7 +11,7 @@ def get_base_keynames(yaml_def, val, name):
   # Get the description
   val['description'] = yaml_def.get('description')
   if val['description'] is None:
-  val['description'] = ''
+    val['description'] = ''
   if not isinstance(val['description'], basestring):
     print "Error: description for property '{}' is not a string".format(name)
 
@@ -32,11 +32,11 @@ def get_base_keynames(yaml_def, val, name):
   if not isinstance(val['type'], basestring):
     print "Error: type for property '{}' is not correct".format(name)
 
-  # Default value
-  default = get_value(yaml_def.get('default'), val['type'])
+  # Default value
+  default = yaml_def.get('default')
+  if default is not None:
+   default = get_value(default, val['type'])
   val['default'] = default
-  if constraints(default) == False:
-    print "Error : default value '{}' breaks the constraints '{}'".format(default, yaml_def.get('constraint'))
 
 
 def get_extra_keynames(yaml_def, val, name):
@@ -52,19 +52,21 @@ def get_extra_keynames(yaml_def, val, name):
 
   # Constraints to be applied
   val['constraints_def'] = yaml_def.get('constraints')
-  constraints = get_constraints(yaml_def.get('constraints'), val['type'])
+  constraints = parse_constraints(yaml_def.get('constraints'), val['type'])
   val['constraints'] = constraints
+  if val['constraints_def'] is not None and val['default'] is not None and constraints(val['default']) == False:
+    print "Error : default value '{}' breaks the constraints '{}'".format(val['default'], val['constraints_def'])
 
   # Entry schema (for list or map types)
   val['entry_schema'] = dict(type=None, constraints=None, constraints_def=None)
-  entry = yal_def.get('entry_schema')
+  entry = yaml_def.get('entry_schema')
   if isinstance(entry, basestring):
     val['entry_schema']['type'] = entry
   else:
-    if isinstance(entry_schema, dict) and 'type' in entry_schema.keys():
-      val['entry_schema']['constraints_def'] = entry_schema.get('constraints')
-      val['entry_schema']['type'] = entry_schema['type']
-      val['entry_schema']['constraints'] = get_constraints(entry_schema.get('constraints'), entry_schema['type'])
+    if isinstance(entry, dict) and 'type' in entry.keys():
+      val['entry_schema']['constraints_def'] = entry.get('constraints')
+      val['entry_schema']['type'] = entry['type']
+      val['entry_schema']['constraints'] = parse_constraints(entry.get('constraints'), entry['type'])
 
 
 def get_attribute_definitions(attributes_def):
@@ -73,7 +75,8 @@ def get_attribute_definitions(attributes_def):
   """
   attributes = {}
   if isinstance(attributes_def, dict):
-    for attr_name, attr_def in attributes_def.items()
+    for attr_name, attr_def in attributes_def.items():
+      attr_val = {}
       attr_val['name'] = attr_name
 
       # Common keynames
@@ -91,7 +94,8 @@ def get_property_definitions(properties_def):
   """
   properties = {}
   if isinstance(properties_def, dict):
-    for prop_name, prop_def in properties_def.items()
+    for prop_name, prop_def in properties_def.items():
+      prop_val = {}
       prop_val['name'] = prop_name
 
       # Common keynames
@@ -111,7 +115,8 @@ def get_parameter_definitions(parameters_def):
   """
   parameters = {}
   if isinstance(parameters_def, dict):
-    for param_name, param_def in paramaters_def.items()
+    for param_name, param_def in paramaters_def.items():
+      param_val = {}
       param_val['name'] = param_name
 
       # Common keynames
@@ -121,7 +126,7 @@ def get_parameter_definitions(parameters_def):
       get_extra_keynames(param_def, param_val, param_name)
       
       # build value for properties
-      properties[param_name] = param_val
+      parameters[param_name] = param_val
 
   return parameters
 

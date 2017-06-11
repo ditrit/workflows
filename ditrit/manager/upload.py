@@ -6,6 +6,14 @@ import copy
 from tosca.template import ToscaTemplate
 from tosca.workflows import *
 from utils.linda import *
+from tosca.artifacttypes import parse_artifact_types
+from tosca.datatypes import parse_data_types
+from tosca.capabilitytypes import parse_capability_types
+from tosca.interfacetypes import parse_interface_types
+from tosca.nodetypes import parse_node_types
+from tosca.relationshiptypes import parse_relationship_types
+from tosca.grouptypes import parse_group_types
+from tosca.policytypes import parse_policy_types
 
 def is_capability_of_type(capability_type, capability_name, capability_def, node_type):
   """
@@ -136,6 +144,15 @@ def parse_model(toscayaml, model_name):
   """
   model = {}
   node_nb = {}
+
+  parse_artifact_types(toscayaml, model_name)
+  parse_data_types(toscayaml, model_name)
+  parse_capability_types(toscayaml, model_name)
+  parse_interface_types(toscayaml, model_name)
+  parse_node_types(toscayaml, model_name)
+  parse_relationship_types(toscayaml, model_name)
+  parse_group_types(toscayaml, model_name)
+  parse_policy_types(toscayaml, model_name)
 
   reltypes = { typename: [] for typename in eval(linda_rd('relationship_type_names')) }
   topology_template = toscayaml.get('topology_template')

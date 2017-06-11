@@ -2,17 +2,17 @@
 from tosca.basetypes   import *
 from tosca.properties import *
 
-def get_operation_definitions(interface_def, for_template=False):
+def get_operation_definitions(operations_def, for_template=False):
   """
       Parse interfaces definition
   """
   operations = {}
   # operations are defined at interface level, there is no 'operation' keys
-  if isinstance(interface_def, dict):
+  if isinstance(operations_def, dict):
 
     # a key is the name of an operation if it is not a predefined key for interfaces
     key_names= ['type', 'derived_from', 'version', 'metadata', 'description', 'inputs']
-    for op_name, op_def in operations_def.items()
+    for op_name, op_def in operations_def.items():
       if op_name not in key_names:
         description = ""
         inputs = []
@@ -28,14 +28,14 @@ def get_operation_definitions(interface_def, for_template=False):
             print "Error: the name of the interface type is mandatory for interface defined in a template"
 
         # get property_definitions in case of a type 
-        if for_templates == False:
+        if for_template == False:
           inputs = get_property_definitions(op_def.get('inputs'))
-        else
+        else:
           ## TODO: get properties 'assignments' in case of a template
           inputs = [] # get_properties_assignments(op_def.get('inputs'))
 
         # get implementation
-        implementation_def = op_def.get('implementation')) 
+        implementation_def = op_def.get('implementation')
         if isinstance(implementation_def, basestring):
           implementation = implementation_def
         else:

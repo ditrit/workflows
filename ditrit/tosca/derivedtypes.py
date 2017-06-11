@@ -10,7 +10,9 @@ def get_types(types_def, type_name):
     type_def = types_def[type_name]
     parent_type = type_def.get('derived_from')
     if isinstance(parent_type, basestring):
-      return get_types(parent_type).append(type_name)
+      types = get_types(types_def, parent_type)
+      types.append(type_name)
+      return types
     else:
       print "Syntax error"
       return []

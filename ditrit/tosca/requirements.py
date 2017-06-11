@@ -10,7 +10,7 @@ def get_requirement_definitions(requirements_def):
   requirements = {}
   if isinstance(requirements_def, dict):
 
-    for requ_name, requ_def in requirements_def.items()
+    for requ_name, requ_def in requirements_def.items():
 
       # init keywords values 
       capability_type = None
@@ -24,7 +24,7 @@ def get_requirement_definitions(requirements_def):
         capability_type = requ_def
 
       # if extended grammar is used
-      if isinstance(requ_def, dict)
+      if isinstance(requ_def, dict):
 
         # get capability type
         capability_type = requ_def.get('capability')
@@ -39,6 +39,8 @@ def get_requirement_definitions(requirements_def):
 
         # get occurrences
         occ_list = requ_def.get('occurrences')
+        if occ_list is None:
+          occ_list = [ 1, 1 ]
         if isinstance(occ_list, list): 
           occ_range = Range.from_list(occ_list)
           if isinstance(occ_range, Range):
@@ -58,10 +60,10 @@ def get_requirement_definitions(requirements_def):
             relationship_type = None
         
         # get interfaces type definition  
-        interface_defs = get_interface_definitions(requ_def.get('interfaces')
+        interface_defs = get_interface_definitions(requ_def.get('interfaces'))
           
-      requ_val = {'name': requ_name, 'capability_type': capability_type, 'node_type' = node_type, 'relationship_type': node_type, 
-                  'occurrence_min' = occ_min, 'occurrence_max': occ_max, 'interfaces': interface_defs }
+      requ_val = {'name': requ_name, 'capability_type': capability_type, 'node_type': node_type, 'relationship_type': node_type, 
+                  'occurrence_min': occ_min, 'occurrence_max': occ_max, 'interfaces': interface_defs }
 
       if 'capability_type' is None:
         print "ERROR : capability type is mandatory in requirement definition ( requirement : {} \n= {} )".format(requ_name, requ_val)

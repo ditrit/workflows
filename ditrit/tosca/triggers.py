@@ -12,7 +12,7 @@ def get_trigger_definitions(trigger_def):
   if isinstance(trigger_def, dict):
 
     # a key is the name of an operation if it is not a predefined key for interfaces
-    for tr_name, tr_def in trigger_def.items()
+    for tr_name, tr_def in trigger_def.items():
       description = ""
       event_type = None
       schedule = None
@@ -22,8 +22,6 @@ def get_trigger_definitions(trigger_def):
       evaluations = None 
       method = None
       action = None
-  
-      
 
       # get description
       val = tr_def.get('description')

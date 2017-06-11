@@ -1,3 +1,22 @@
+import datetime
+
+
+basetypes = { 
+     'string':  {'derived_from': 'tosca.datatypes.Root'},
+     'integer': {'derived_from': 'tosca.datatypes.Root'},
+     'float':   {'derived_from': 'tosca.datatypes.Root'},
+     'boolean': {'derived_from': 'tosca.datatypes.Root'},
+     'null':    {'derived_from': 'tosca.datatypes.Root'},
+     'timestamp':   {'derived_from': 'tosca.datatypes.Root'},
+     'version': {'derived_from': 'tosca.datatypes.Root'},
+     'range':   {'derived_from': 'tosca.datatypes.Root'},
+     'size':   {'derived_from': 'tosca.datatypes.Root'},
+     'time':   {'derived_from': 'tosca.datatypes.Root'},
+     'frequency':   {'derived_from': 'tosca.datatypes.Root'},
+     'list':    {'derived_from': 'tosca.datatypes.Root'},
+     'map':     {'derived_from': 'tosca.datatypes.Root'}
+  }
+
 
 class Version(object):
 
@@ -20,7 +39,7 @@ class Version(object):
             if vlen == 4:
               self.qualifier   = str(valdef_args[3])
               qualifier_args = qualifier.split('-')
-              if len(qualifier_args) == 2
+              if len(qualifier_args) == 2:
                 self.qualifier     = str(qualifier_args[0])
                 self.build_version = int(qualifier_args[1])
               else:
@@ -38,14 +57,14 @@ class Version(object):
     return "{}.{}{}".format(self.major_version, self.minor_version, detail)
 
   def __eq__(self, other):
-    return self.major_version == other.major_version and
-           self.minor_version == other.minor_version and
-           self.fix_version == other.fix_version and
-           self.qualifier == other.qualifier and
+    return self.major_version == other.major_version and \
+           self.minor_version == other.minor_version and \
+           self.fix_version == other.fix_version and \
+           self.qualifier == other.qualifier and \
            self.build_version == other.build_version 
 
   def __lt__(self, other):
-    return self.major_version < other.major_version  or
+    return self.major_version < other.major_version  or \
        ( self.major_version == other.major_version and self.minor_version < other.minor_version ) or \
        ( self.major_version == other.major_version and self.minor_version == other.minor_version and self.fix_version < other.fix_version ) or \
        ( self.major_version == other.major_version and self.minor_version == other.minor_version and self.fix_version == other.fix_version and self.qualifier != '' and other.qualifier == "") or \
@@ -64,12 +83,12 @@ class Version(object):
   def __ge__(self, other):
     return other < self or self == other
 
-class Range(object)
+class Range(object):
 
   unbounded = 'UNBOUNDED'
 
-  def __init__( minval, maxval ):
-    if isinstance(minval, int) and ((isinstance(maxval, int) and maxval >= minval) or str(maxval) == unbounded):
+  def __init__(self, minval, maxval ):
+    if isinstance(minval, int) and ((isinstance(maxval, int) and maxval >= minval) or str(maxval) == Range.unbounded):
       self.minval = minval
       self.maxval = maxval
     else:
@@ -80,7 +99,7 @@ class Range(object)
 
   def __contains__(self, val):
     minok = val >= self.minval
-    if self.maxval != unbounded:
+    if self.maxval != Range.unbounded:
       maxok = val <= self.maxval
     else:
       maxok = True
@@ -88,7 +107,7 @@ class Range(object)
 
   @classmethod
   def from_minmax(cls, minval, maxval):
-    if isinstance(minval, int) and ((isinstance(maxval, int) and maxval >= minval) or str(maxval) == unbounded):
+    if isinstance(minval, int) and ((isinstance(maxval, int) and maxval >= minval) or str(maxval) == Range.unbounded):
       return cls(minval, maxval)
     else:
       return None
@@ -104,7 +123,7 @@ class Range(object)
 
 class ScalarUnit(object):
 
-  def __init__(scalar, unit):
+  def __init__(self, scalar, unit):
     self.scalar = scalar
     self.unit   = unit
     if self.unit in units.keys():
@@ -114,7 +133,7 @@ class ScalarUnit(object):
 
   @classmethod
   def from_string(cls, strval):
-    if isinstance(strval, basestring)
+    if isinstance(strval, basestring):
       args = strval.split()
       if len(args) == 2 : 
         return cls(args[0], args[1])
@@ -184,9 +203,9 @@ def get_float(valdef):
 
 def get_boolean(valdef):
   value = None
-  if valdef in [ False, 'false', 'False' ]
+  if valdef in [ False, 'false', 'False' ]:
     return False
-  if valdef in [ True, 'true', 'True' ]
+  if valdef in [ True, 'true', 'True' ]:
     return True
   try:
     value = eval(valdef)
@@ -195,12 +214,12 @@ def get_boolean(valdef):
   return value
 
 def get_null(valdef):
-  if valdef not in [ None, 'null' ]
+  if valdef not in [ None, 'null' ]:
     print "'{}' is not null value".format(valdef)
   return None
 
 def get_timestamp(valdef):
-  if isinstance(valdef, datetime.datetime)
+  if isinstance(valdef, datetime.datetime):
     return valdef
   else:
     print "'{}' is not a timestamp".format(valdef)
@@ -270,7 +289,7 @@ def get_value(valdef, typename):
     'list':      get_list,
     'map':       get_map
   }
-  if typename in get_value_map.keys()
+  if typename in get_value_map.keys():
     return get_value_map[typename](valdef)
   else:
     return None

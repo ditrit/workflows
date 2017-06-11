@@ -10,7 +10,7 @@ def get_interface_definitions(interfaces_def, for_template=False):
   interfaces = {}
   if isinstance(interfaces_def, dict):
 
-    for if_name, if_def in interfaces_def.items()
+    for if_name, if_def in interfaces_def.items():
 
       interface_type = None
       inputs = []
@@ -25,9 +25,9 @@ def get_interface_definitions(interfaces_def, for_template=False):
         print "Error: the name of the interface type is mandatory for interface defined in a template"
 
       # get property_definitions in case of a type 
-      if for_templates == False:
+      if for_template == False:
         inputs = get_property_definitions(if_def.get('inputs'))
-      else
+      else:
         ## TODO: get properties 'assignments' in case of a template
 	inputs = [] # get_properties_assignments(if_def.get('inputs'))
 

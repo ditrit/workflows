@@ -62,11 +62,11 @@ def parse_constraint(expr, typename):
     'length':           f_ln,
     'min_length':       f_mn,
     'max_length':       f_mx,
-    'pattern':          f_re,
+    'pattern':          f_re }
   if isinstance(expr, dict) and len(expr) == 1:
     key = expr.keys()[0]
-    if key in contraint_map.keys():
-      return constraint_map[key](expr[key])  
+    if key in constraint_map.keys():
+      return constraint_map[key](expr[key], typename)  
   print "Error: {} is not a valid expression for a constraint".format(expr)
   return lambda _ : False
     

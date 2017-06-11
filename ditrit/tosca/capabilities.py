@@ -3,14 +3,14 @@ from tosca.basetypes   import *
 from tosca.constraints import *
 from tosca.interfaces import *
 
-def get_capability_definitions(requirements_def):
+def get_capability_definitions(capabilities_def):
   """
       Parse capability definitions
   """
-  capabilites = {}
+  capabilities = {}
   if isinstance(capabilities_def, dict):
 
-    for capa_name, capa_def in capabilities_def.items()
+    for capa_name, capa_def in capabilities_def.items():
 
       # init keywords values 
       capa_type = None
@@ -25,7 +25,7 @@ def get_capability_definitions(requirements_def):
         capa_type = capa_def
 
       # if extended grammar is used
-      if isinstance(capa_def, dict)
+      if isinstance(capa_def, dict):
 
         # get capability type
         capa_type = capa_def.get('type')
@@ -34,12 +34,12 @@ def get_capability_definitions(requirements_def):
 
         # get capability description
         descr = capa_def.get("description")
-        if isinstacne(descr, basestring):
+        if isinstance(descr, basestring):
           description = descr
 
         # get properties and attributes
-        val['properties']   = get_property_definitions(capa_def.get('properties'))
-        val['attributes']   = get_attribute_definitions(capa_def.get('attributes'))
+        properties = get_property_definitions(capa_def.get('properties'))
+        attributes = get_attribute_definitions(capa_def.get('attributes'))
 
         # get valid_source_types
         sources = capa_def.get('valid_source_types')
@@ -47,18 +47,20 @@ def get_capability_definitions(requirements_def):
           valid_source_types = sources
 
         # get occurrences
-        occ_list = requ_def.get('occurrences')
+        occ_list = capa_def.get('occurrences')
+        if occ_list is None:
+          occ_list = [ 1, 'UNBOUNDED' ]
         if isinstance(occ_list, list): 
           occ_range = Range.from_list(occ_list)
           if isinstance(occ_range, Range):
             occ_min = occ_range.minval
             occ_max = occ_range.maxval
         else:
-          print "Syntax Error in occurences definition '{}' for requirement '{}".format(occ_list, requ_name)
+          print "Syntax Error in occurences definition '{}' for requirement '{}".format(occ_list, capa_name)
 
-      capa_val = {'name': capa_name, 'type': capa_type, 'description' = description, 
+      capa_val = {'name': capa_name, 'type': capa_type, 'description': description, 
                   'properties': properties, 'attributes': attributes, 'valid_sources_types': valid_source_types,
-                  'occurrence_min' = occ_min, 'occurrence_max': occ_max }
+                  'occurrence_min': occ_min, 'occurrence_max': occ_max }
 
       if 'capa_type' is None:
         print "ERROR : type is mandatory in capability definition ( {} \n= {} )".format(capa_name, capa_val)
