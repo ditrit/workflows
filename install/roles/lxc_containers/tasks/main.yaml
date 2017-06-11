@@ -8,6 +8,8 @@
     container_config: 
       - "lxc.network.ipv4={{ hostvars[item]['ip'] }}"
       - "lxc.network.ipv4.gateway={{ hostvars[item]['gateway'] }}"
+      - "lxc.autodev = 1"
+      - "lxc.kmsg = 0"
   with_items: 
     - "{{ groups['ditrit_srvs'] }}"
 

@@ -15,6 +15,7 @@ node_types:
   tosca.nodes.Root:
     derived_from: tosca.entity.Root
     description: The TOSCA Node Type all other TOSCA base Node Types derive from
+
     attributes:
       tosca_id:
         type: string
@@ -22,18 +23,47 @@ node_types:
         type: string
       state:
         type: string
+
     capabilities:
       feature:
         type: tosca.capabilities.Node
+
     requirements:
       - dependency:
           capability: tosca.capabilities.Node
           node: tosca.nodes.Root
-                   relationship: tosca.relationships.DependsOn
-                   occurrences: [ 0, UNBOUNDED ]
+          relationship: tosca.relationships.DependsOn
+          occurrences: [ 0, UNBOUNDED ]
+
     interfaces:
       Standard:
         type: tosca.interfaces.node.lifecycle.Standard
+
+    workflows:
+      install:
+        steps:
+          install_sequence:
+            activities:
+             - set_state: creating
+             - call_operation: tosca.interfaces.node.lifecycle.Standard.create
+             - set_state: created
+             - set_state: configuring
+             - call_operation: tosca.interfaces.node.lifecycle.Standard.configure
+             - set_state: configured
+             - set_state: starting
+             - call_operation: tosca.interfaces.node.lifecycle.Standard.start
+             - set_state: started
+      uninstall:
+        steps:
+          uninstall_sequence:
+            activities:
+              - set_state: stopping
+              - call_operation: tosca.interfaces.node.lifecycle.Standard.stop
+              - set_state: stopped
+              - set_state: deleting
+              - call_operation: tosca.interfaces.node.lifecycle.Standard.delete
+              - set_state: deleted
+
   
   
   #section: 5.9.2 tosca.nodes.Compute

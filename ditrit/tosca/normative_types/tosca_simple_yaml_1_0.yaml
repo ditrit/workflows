@@ -13,6 +13,7 @@ imports:
   data_types:         tosca_simple_yaml_1_0_datatypes.yaml
   capability_types:   tosca_simple_yaml_1_0_capabilities.yaml
   interfaces_types:   tosca_simple_yaml_1_0_interfaces.yaml
+  node_types:         tosca_simple_yaml_1_0_nodes.yaml
   relationship_types: tosca_simple_yaml_1_0_relationships.yaml
   group_types:        tosca_simple_yaml_1_0_groups.yaml
   policy_types:       tosca_simple_yaml_1_0_policies.yaml

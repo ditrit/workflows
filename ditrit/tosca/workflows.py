@@ -9,6 +9,7 @@ def parse_declarative_workflows(toscayaml):
   """
   states_order    = {}
 
+  print "parse_declarative_workflow : toscayaml : {}".format(toscayaml)
   # Part of the workflows defined in nodes have to be parsed before the part defined in relations. 
   nt_def = toscayaml.get('node_types')
   rt_def = toscayaml.get('relationship_types')

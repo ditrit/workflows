@@ -78,6 +78,7 @@ def parse_csar(csarfile, model_name = None):
   toscayaml = None
   if entry_file is not None:
     toscayaml = parse_tosca("{}/{}".format(csardir, entry_file))
+    print "=======>>>>> toscayaml = {}".format(toscayaml)
 
   # Second step : parse TOSCA types en topology (model)
   if toscayaml is not None:
