@@ -16,6 +16,7 @@
     - python-flask 
     - python-pip
     - python-boto
+    - vim
 
 - name: Fichier logs
   file:

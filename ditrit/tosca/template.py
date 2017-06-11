@@ -157,7 +157,6 @@ class ToscaTemplate(ToscaObject):
               import_file = import_def.get('file') 
         if import_file is not None:
           reldir = reldir + "/" if len(reldir)> 0 and reldir[-1] != '/' else reldir 
-          print "################ reldir + import_file = {}".format(reldir + import_file)
           import_tpl = yamlparser.load_yaml(reldir + import_file) 
           if isinstance(import_tpl, dict):
             fimportname  = os.path.basename(import_file)

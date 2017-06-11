@@ -9,7 +9,6 @@ def parse_declarative_workflows(toscayaml):
   """
   states_order    = {}
 
-  print "parse_declarative_workflow : toscayaml : {}".format(toscayaml)
   # Part of the workflows defined in nodes have to be parsed before the part defined in relations. 
   nt_def = toscayaml.get('node_types')
   rt_def = toscayaml.get('relationship_types')
@@ -81,22 +80,24 @@ def parse_declarative_workflows(toscayaml):
               wait_state  = weave.get(wait)
               action  = weave.get(activity)
 
-              for nodetype in nt_def:
+              for nodetype, node in nt_def.iteritems():
+                node_wks = node.get('workflows')
+                if node_wks is not None and workflow_name in node_wks.keys():
 
-                # Rete_states is used to find the step 'just after' or 'just before' the 'weaving_state' is reached.
-                # The condition found (find_cond) for this step is the weaving point.
-                if before_state:
-                  find_step = states_order[nodetype][workflow_name][before_state]
-                if after_state:
-                  find_step = states_order[nodetype][workflow_name][after_state]
+                  # Rete_states is used to find the step 'just after' or 'just before' the 'weaving_state' is reached.
+                  # The condition found (find_cond) for this step is the weaving point.
+                  if before_state:
+                    find_step = states_order[nodetype][workflow_name][before_state]
+                  if after_state:
+                    find_step = states_order[nodetype][workflow_name][after_state]
 
-                # 'wait_state' and related 'wait_step' concern the condition to be observed on the other node of the relation.
-                wait_step = None
-                if wait_state:
-                  wait_step = states_order[nodetype][workflow_name][wait_state] + 1
+                  # 'wait_state' and related 'wait_step' concern the condition to be observed on the other node of the relation.
+                  wait_step = None
+                  if wait_state:
+                    wait_step = states_order[nodetype][workflow_name][wait_state] + 1
 
-                keyrete  = 'ReteNode/{}/{}/{}'.format(workflow_name, nodetype, find_step)
-                rete[keyrete]['weaving'][direction][typename]= {'wait_step': wait_step, 'facts': [], 'activity': action }
+                  keyrete  = 'ReteNode/{}/{}/{}'.format(workflow_name, nodetype, find_step)
+                  rete[keyrete]['weaving'][direction][typename]= {'wait_step': wait_step, 'facts': [], 'activity': action }
 
   # insertion du reseau rete dans Consul
   for key in rete:
